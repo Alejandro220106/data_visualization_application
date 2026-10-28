@@ -1,87 +1,91 @@
-# Visualizador de respuestas
+# Herramienta graficadora
 
-Aplicación local en Python para graficar las respuestas de un formulario de Google Forms. Importas el CSV descargado de Google Sheets, eliges una pregunta y la app muestra el gráfico más adecuado, que puedes cambiar por otro compatible, exportar como PNG y guardar en un historial local.
+Aplicación web de uso académico para visualizar los datos del proyecto **«Uso y dependencia académica percibida de la inteligencia artificial en estudiantes de la UTN, Sede Regional de San Carlos: EcoCampus y Lourdes»** (ITI-624, III cuatrimestre 2026).
 
-Se ejecuta en tu equipo y se abre en el navegador (`http://localhost:8501`). No se publica en Internet y los datos no salen de tu computadora.
+Está construida con **HTML, CSS y JavaScript** y usa **Chart.js** como componente de gráficos. Se abre desde un navegador en computadora o teléfono, sin instalar ningún programa. El CSV se procesa únicamente en el navegador: no se envía a ningún servidor.
 
-## Requisitos
+## Qué hace
 
-- Python 3.11 o superior ([python.org](https://www.python.org/downloads/)).
-- Google Chrome o Chromium, solo para exportar PNG (lo usa `kaleido`).
-- Un monitor de escritorio. La interfaz se adapta a distintas resoluciones, pero no está pensada para teléfonos.
+- Importa el CSV depurado exportado desde Google Forms / Google Sheets (también se puede arrastrar el archivo).
+- Permite seleccionar la variable (pregunta) de interés.
+- Genera **gráficos de barras** de frecuencias.
+- Muestra las **escalas con barras ordenadas** por nivel: 1–5, 0–7 días, Nunca → Siempre y Totalmente en desacuerdo → Totalmente de acuerdo.
+- **Filtra por recinto** y **compara EcoCampus y Lourdes** en barras agrupadas, con porcentajes calculados dentro de cada recinto.
+- Cada gráfico identifica la variable (título), las categorías (eje), la unidad de medida (título del eje) y el número de respuestas válidas (*n* en el subtítulo).
+- Identifica las preguntas de **selección múltiple**: cuenta cada opción y calcula los porcentajes sobre las personas que respondieron, por lo que pueden sumar más de 100 %.
+- Los **valores faltantes no se transforman en ceros**. Las omisiones y las respuestas **«No aplica»** se excluyen de los porcentajes válidos y se informan por separado.
+- Incluye una **explicación de lectura** de cada gráfico: respuesta más frecuente, mediana o promedio, exclusiones y limitaciones del estudio.
+- Muestra una tabla de frecuencias como alternativa accesible al gráfico.
+- Permite **descargar el gráfico** como imagen PNG.
+- Advierte si el CSV parece contener identificadores personales (nombre, correo, cédula, etc.).
 
-## Instalación y uso
+## Uso
 
-| Sistema | Instalar (una sola vez) | Abrir la app |
-|---|---|---|
-| Windows | `scripts\instalar.bat` | `scripts\iniciar.bat` |
-| Linux / macOS | `./scripts/instalar.sh` | `./scripts/iniciar.sh` |
+### Opción 1: abrir el archivo
 
-1. En Google Sheets: **Archivo → Descargar → Valores separados por comas (.csv)**.
-2. Abre la app y sube el archivo desde la barra lateral.
-3. Elige la pregunta y, si quieres, otro tipo de gráfico.
-4. Usa **Generar PNG** para descargar la imagen o **Guardar en historial** para recuperarla después.
+Abre `index.html` con doble clic. Funciona sin servidor; solo el botón «Usar datos de ejemplo» necesita uno (ver la opción 2). Sin servidor, elige el CSV con «Elegir archivo CSV».
 
-## Cómo elige el gráfico
-
-| Tipo de pregunta | Ejemplo | Gráfico sugerido | Alternativas |
-|---|---|---|---|
-| Opción única | Medio de transporte | Barras | Barras horizontales, pastel (hasta 6 opciones) |
-| Casillas (varias opciones) | Lenguajes que conoces | Barras horizontales | Barras |
-| Escala lineal (0–10) | Satisfacción 1–5 | Barras | Histograma, caja |
-| Numérica | Edad | Histograma | Caja |
-| Respuesta abierta | Comentarios | No se grafica | — |
-
-En las preguntas de casillas, Google Forms guarda las opciones juntas (`"Python, Java"`). La app las separa y cuenta cada una; por eso los porcentajes pueden sumar más de 100 %.
-
-## Dónde se guardan los datos
-
-El historial (`historial.db`) y las copias de los CSV se guardan en la carpeta de datos del usuario, no junto al programa:
-
-| Sistema | Carpeta |
-|---|---|
-| Windows | `%LOCALAPPDATA%\AppGraficos` |
-| macOS | `~/Library/Application Support/AppGraficos` |
-| Linux | `~/.local/share/AppGraficos` |
-
-Para usar otra carpeta, define la variable de entorno `APP_GRAFICOS_DATOS`. Actualizar la aplicación no borra el historial.
-
-## Ejecutables nativos (opcional)
-
-Para distribuir la app sin que el usuario instale Python:
-
-| Sistema | Comando | Resultado |
-|---|---|---|
-| Windows | `scripts\construir_ejecutable.bat` | `dist\AppGraficos\AppGraficos.exe` |
-| Linux / macOS | `./scripts/construir_ejecutable.sh` | `dist/AppGraficos/AppGraficos` |
-
-**PyInstaller no compila de forma cruzada**: el `.exe` se genera en Windows, el binario de Linux en Linux y el de macOS en macOS. Prueba cada ejecutable en su sistema antes de distribuirlo. Para entregarlo, comprime la carpeta `dist/AppGraficos/` completa.
-
-## Desarrollo
+### Opción 2: servidor local
 
 ```bash
-pip install -r requirements-dev.txt
-pytest
-ruff check .
-ruff format --check .
+python -m http.server 8080
 ```
 
+Luego abre `http://localhost:8080`.
+
+### Opción 3: enlace público para la prueba con usuarios
+
+El documento prevé entregar a los participantes un enlace a la herramienta. Como es un sitio estático, se puede publicar con **GitHub Pages**: *Settings → Pages → Deploy from a branch → main / (root)*. El enlace queda como `https://<usuario>.github.io/data_visualization_application/`.
+
+Para que los participantes vean los datos del estudio sin importar un archivo, reemplaza `datos/encuesta_ia.csv` por el CSV depurado real (sin identificadores personales) y cambia el texto del botón en `index.html`.
+
+## Datos de ejemplo
+
+`datos/encuesta_ia.csv` contiene **40 respuestas sintéticas** con la misma estructura del primer formulario: elegibilidad, recinto, carrera, nivel, uso en 30 días, frecuencia en 7 días, finalidades (selección múltiple), los tres ítems de dependencia percibida (1–5) y las tres conductas de autonomía (con «No aplica»). No son datos reales.
+
+## Cómo interpreta cada pregunta
+
+| Tipo | Cómo se detecta | Gráfico |
+|---|---|---|
+| Opción única | Texto con pocas categorías repetidas | Barras de mayor a menor frecuencia |
+| Selección múltiple | Celdas con opciones separadas por «, » que se repiten entre personas | Barras horizontales; % sobre personas |
+| Escala | Enteros entre 0 y 10, o niveles Nunca → Siempre / Totalmente en desacuerdo → Totalmente de acuerdo | Barras en el orden de la escala, con todos sus niveles |
+| Numérica | Números fuera del rango de escala (por ejemplo, edades) | Barras por intervalos (regla de Sturges) |
+| Respuesta abierta | Casi todas las respuestas distintas (por ejemplo, la marca temporal) | No se grafica |
+
+La columna de recinto se reconoce porque su encabezado contiene la palabra «recinto».
+
+El promedio exploratorio de los tres ítems de dependencia (sección 1.5 del documento) se calcula en Google Sheets antes de exportar, solo para quienes respondieron los tres ítems. La herramienta grafica esa columna como cualquier otra variable numérica.
+
+## Estructura
+
 ```
-app.py              Interfaz Streamlit
-graficos/           Lógica sin dependencia de la interfaz
-  carga_csv.py      Lectura y validación del CSV
-  tipos.py          Detección del tipo de pregunta
-  visualizacion.py  Gráficos Plotly y tabla de frecuencias
-  exportacion.py    Exportación a PNG
-  historial.py      Historial en SQLite
-  rutas.py          Carpeta de datos del usuario
-lanzador.py         Entrada del ejecutable de PyInstaller
-scripts/            Instalación, inicio y construcción por plataforma
-tests/              Pruebas con pytest (incluye un CSV de ejemplo)
+index.html            Página de la herramienta
+css/estilos.css       Estilos (móvil primero, adaptables a computadora)
+js/csv.js             Lectura y validación del CSV
+js/tipos.js           Detección del tipo de pregunta, «No aplica» y escalas
+js/estadisticas.js    Frecuencias, filtro, comparación por recinto y medidas descriptivas
+js/lectura.js         Explicaciones de lectura
+js/grafico.js         Configuración de los gráficos de barras (Chart.js)
+js/descarga.js        Descarga del gráfico en PNG
+js/privacidad.js      Aviso de identificadores personales
+js/app.js             Interfaz: conecta todo lo anterior
+vendor/               Chart.js 4.4.7 (licencia MIT), incluido localmente
+datos/                CSV de ejemplo
+tests/                Pruebas con node:test
+```
+
+## Pruebas
+
+Requieren Node.js 20 o superior y no instalan dependencias:
+
+```bash
+npm test
 ```
 
 ## Limitaciones
 
-- Solo se aceptan CSV en UTF-8, que es como los exporta Google Sheets. Si abres el archivo en Excel y lo vuelves a guardar, puede cambiar la codificación o el separador.
+- Solo se aceptan CSV en UTF-8, que es como los exporta Google Sheets.
 - Se muestra un gráfico a la vez.
-- Exportar PNG necesita Chrome o Chromium; si no están, usa el ícono de cámara de la barra del gráfico.
+- Las comparaciones entre recintos son descriptivas: no indican diferencias estadísticamente significativas.
+- Los resultados describen a quienes respondieron y no se generalizan a toda la población estudiantil.
