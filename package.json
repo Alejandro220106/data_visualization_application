@@ -5,6 +5,6 @@
   "description": "Herramienta graficadora web para la encuesta sobre uso académico de IA generativa (UTN, Sede San Carlos)",
   "type": "module",
   "scripts": {
-    "test": "node --test tests/"
+    "test": "node --test \"tests/**/*.test.js\""
   }
 }
