@@ -4,6 +4,8 @@ import pandas as pd
 import streamlit as st
 
 from graficos.carga_csv import ErrorCSV, leer_csv
+from graficos.exportacion import ErrorExportacion, exportar_png
+from graficos.historial import Historial
 from graficos.tipos import TipoColumna, detectar_tipo
 from graficos.visualizacion import contar_respuestas, crear_figura, graficos_compatibles
 
@@ -13,6 +15,11 @@ st.set_page_config(page_title="Visualizador de respuestas", page_icon="📊", la
 @st.cache_data(show_spinner=False)
 def cargar(contenido: bytes) -> tuple[pd.DataFrame, list[str]]:
     return leer_csv(contenido)
+
+
+@st.cache_resource
+def obtener_historial() -> Historial:
+    return Historial()
 
 
 def seleccionar_archivo(nombre: str, contenido: bytes) -> None:
@@ -105,6 +112,42 @@ def area_principal() -> None:
     if tipo is not TipoColumna.NUMERICA:
         with st.expander("Tabla de frecuencias"):
             st.dataframe(contar_respuestas(serie, tipo), hide_index=True, width="stretch")
+
+    acciones(archivo, figura, columna, grafico.value)
+
+
+def acciones(archivo: dict, figura, columna: str, grafico: str) -> None:
+    exportar, guardar, _ = st.columns([1, 1, 3])
+    clave_png = (archivo["nombre"], columna, grafico)
+    with exportar:
+        if st.session_state.get("png", {}).get("clave") == clave_png:
+            st.download_button(
+                "Descargar PNG",
+                st.session_state.png["imagen"],
+                file_name=f"{columna[:60]}.png",
+                mime="image/png",
+                icon=":material/download:",
+                width="stretch",
+            )
+        elif st.button("Generar PNG", icon=":material/image:", width="stretch"):
+            try:
+                with st.spinner("Generando imagen…"):
+                    imagen = exportar_png(figura)
+                st.session_state.png = {"clave": clave_png, "imagen": imagen}
+                st.rerun()
+            except ErrorExportacion as error:
+                st.warning(str(error))
+    with guardar, st.popover("Guardar en historial", icon=":material/save:", width="stretch"):
+        nombre = st.text_input(
+            "Nombre del análisis",
+            value=f"{archivo['nombre'].removesuffix('.csv')} · {columna[:40]}",
+            max_chars=120,
+        )
+        if st.button("Guardar", type="primary"):
+            obtener_historial().guardar(
+                nombre, archivo["nombre"], archivo["contenido"], columna, grafico
+            )
+            st.toast("Análisis guardado en el historial", icon=":material/check:")
 
 
 barra_lateral()
