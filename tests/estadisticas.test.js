@@ -57,7 +57,8 @@ test("medidas descriptivas de una escala numérica", () => {
 });
 
 test("mediana de una escala de texto", () => {
-  assert.equal(analizar(["Nunca", "A veces", "Siempre"]).descriptivas.medianaNivel, "A veces");
+  assert.deepEqual(analizar(["Nunca", "A veces", "Siempre"]).descriptivas.medianaNiveles, ["A veces"]);
+  assert.deepEqual(analizar(["Nunca", "A veces", "Siempre", "Siempre"]).descriptivas.medianaNiveles, ["A veces", "Siempre"]);
 });
 
 test("variable numérica continua se agrupa en intervalos", () => {

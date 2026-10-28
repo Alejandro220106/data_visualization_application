@@ -69,3 +69,9 @@ test("la comparación explica cada recinto y advierte grupos pequeños", () => {
   assert.match(aviso, /pocas respuestas/);
   assert.match(aviso, /2 participantes no indicaron recinto/);
 });
+
+test("la mediana entre dos niveles no repite comillas", () => {
+  const texto = explicar(["Nunca", "A veces", "Siempre", "Siempre"]);
+  assert.match(texto, /La mediana se ubica entre «A veces» y «Siempre»./);
+  assert.doesNotMatch(texto, /««|»»/);
+});

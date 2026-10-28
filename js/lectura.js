@@ -15,6 +15,11 @@
     return `${formatearNumero(cantidad)} ${cantidad === 1 ? singular : pluralTexto}`;
   }
 
+  /** «A veces» o «entre «A veces» y «Casi siempre»» sin comillas duplicadas. */
+  function formatearMediana(niveles) {
+    return niveles.length === 1 ? `en «${niveles[0]}»` : `entre «${niveles[0]}» y «${niveles[1]}»`;
+  }
+
   /** Categorías con la mayor cantidad (puede haber empate). */
   function masFrecuentes(frecuencias) {
     const maximo = Math.max(...frecuencias.map((f) => f.cantidad));
@@ -36,7 +41,7 @@
   function fraseDescriptiva(resumen, tipo) {
     const d = resumen.descriptivas;
     if (!d) return null;
-    if (d.medianaNivel) return `La mediana se ubica en «${d.medianaNivel}».`;
+    if (d.medianaNiveles) return `La mediana se ubica ${formatearMediana(d.medianaNiveles)}.`;
     const rango = `de ${formatearNumero(d.minimo)} a ${formatearNumero(d.maximo)}`;
     if (tipo === TIPOS.NUMERICA) {
       return `Los valores van ${rango}; el promedio es ${formatearNumero(d.media)} y la mediana ${formatearNumero(d.mediana)}. Las barras agrupan los valores en intervalos.`;
@@ -85,7 +90,7 @@
       const lider = primeras.map((f) => `«${f.categoria}»`).join(" y ");
       let frase = `${encabezado}: lo más frecuente fue ${lider} (${formatearPorcentaje(primeras[0].porcentaje)}).`;
       const d = resumen.descriptivas;
-      if (d?.medianaNivel) frase += ` Mediana: «${d.medianaNivel}».`;
+      if (d?.medianaNiveles) frase += ` La mediana se ubica ${formatearMediana(d.medianaNiveles)}.`;
       else if (d && d.media !== undefined) frase += ` Promedio: ${formatearNumero(d.media)}; mediana: ${formatearNumero(d.mediana)}.`;
       frases.push(frase);
     }

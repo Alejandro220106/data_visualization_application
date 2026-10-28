@@ -94,12 +94,9 @@
       const medio = Math.floor(posiciones.length / 2);
       const bajo = posiciones.length % 2 ? posiciones[medio] : posiciones[medio - 1];
       const alto = posiciones[medio];
-      return {
-        medianaNivel:
-          bajo === alto
-            ? descripcion.orden[bajo]
-            : `entre «${descripcion.orden[bajo]}» y «${descripcion.orden[alto]}»`,
-      };
+      // Con cantidad par de respuestas la mediana puede quedar entre dos niveles.
+      const medianaNiveles = bajo === alto ? [descripcion.orden[bajo]] : [descripcion.orden[bajo], descripcion.orden[alto]];
+      return { medianaNiveles };
     }
     return null;
   }
