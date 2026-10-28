@@ -75,3 +75,21 @@ test("la mediana entre dos niveles no repite comillas", () => {
   assert.match(texto, /La mediana se ubica entre «A veces» y «Siempre»./);
   assert.doesNotMatch(texto, /««|»»/);
 });
+
+test("usa la frase de lectura del tipo de gráfico mostrado", () => {
+  const valores = ["Sí", "No", "Sí"];
+  const descripcion = describirPregunta(valores);
+  const resumen = resumir(valores, descripcion);
+  const circular = explicarResumen(descripcion.tipo, resumen, null, "Cada sector representa…").join(" ");
+  assert.match(circular, /Cada sector representa/);
+  assert.doesNotMatch(circular, /Cada barra/);
+  assert.match(explicarResumen(descripcion.tipo, resumen).join(" "), /Cada barra/);
+});
+
+test("la comparación incluye primero la frase de lectura si se indica", () => {
+  const columna = "Verifico las respuestas que recibo";
+  const descripcion = describirPregunta(encuesta.filas.map((f) => f[columna]));
+  const comparacion = compararGrupos(encuesta.filas, columna, RECINTO, descripcion);
+  const frases = explicarComparacion(descripcion.tipo, comparacion, "Cada recinto es un polígono…");
+  assert.equal(frases[0], "Cada recinto es un polígono…");
+});

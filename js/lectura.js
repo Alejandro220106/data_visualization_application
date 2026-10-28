@@ -58,8 +58,14 @@
     return `No se incluyen en los porcentajes: ${partes.join("; ")}. Las omisiones no se cuentan como cero.`;
   }
 
-  /** Explicación de un gráfico simple (todos o un recinto). */
-  function explicarResumen(tipo, resumen, grupo = null) {
+  const LECTURA_BARRAS =
+    "Cada barra indica la cantidad de personas y el porcentaje que representa dentro de las respuestas válidas.";
+
+  /**
+   * Explicación de un gráfico simple (todos o un recinto).
+   * «comoLeer» describe el tipo de gráfico mostrado (barras, circular o araña).
+   */
+  function explicarResumen(tipo, resumen, grupo = null, comoLeer = LECTURA_BARRAS) {
     const donde = grupo ? ` de ${grupo}` : "";
     const frases = [
       `Se muestran ${plural(resumen.personas, "respuesta válida", "respuestas válidas")} de ${plural(resumen.total, "participante", "participantes")}${donde}.`,
@@ -70,16 +76,15 @@
       frases.push(
         `Cada persona podía marcar varias opciones (en total se marcaron ${formatearNumero(resumen.selecciones)}), por eso los porcentajes se calculan sobre las personas y pueden sumar más de 100 %.`,
       );
-    } else {
-      frases.push("Cada barra indica la cantidad de personas y el porcentaje que representa dentro de las respuestas válidas.");
     }
-    frases.push(fraseExclusiones(resumen), LIMITACION);
+    frases.push(comoLeer, fraseExclusiones(resumen), LIMITACION);
     return frases.filter(Boolean);
   }
 
   /** Explicación de la comparación entre recintos. */
-  function explicarComparacion(tipo, comparacion) {
+  function explicarComparacion(tipo, comparacion, comoLeer = null) {
     const frases = [];
+    if (comoLeer) frases.push(comoLeer);
     for (const { nombre, resumen } of comparacion.grupos) {
       const primeras = masFrecuentes(resumen.frecuencias);
       const encabezado = `${nombre} (${plural(resumen.personas, "respuesta válida", "respuestas válidas")})`;
