@@ -178,3 +178,12 @@ test("la comparación en araña dibuja un polígono por recinto", () => {
   assert.equal(config.options.plugins.legend.display, true);
   assert.ok(config.options.scales.r.suggestedMax <= 100);
 });
+
+test("explica cómo leer cada tipo de gráfico", () => {
+  const { comoLeerGrafico } = G.grafico;
+  assert.match(comoLeerGrafico(TIPOS_GRAFICO.CIRCULAR, { tipo: TIPOS.CATEGORICA }), /sector/);
+  assert.match(comoLeerGrafico(TIPOS_GRAFICO.ARANA, { tipo: TIPOS.ESCALA }), /eje/);
+  assert.match(comoLeerGrafico(TIPOS_GRAFICO.ARANA, { tipo: TIPOS.ESCALA, comparar: true }), /polígono/);
+  assert.match(comoLeerGrafico(TIPOS_GRAFICO.BARRAS_HORIZONTALES, { tipo: TIPOS.MULTIRESPUESTA }), /^La longitud/);
+  assert.match(comoLeerGrafico(TIPOS_GRAFICO.BARRAS_VERTICALES, { tipo: TIPOS.CATEGORICA, comparar: true }), /cada color es un recinto/);
+});

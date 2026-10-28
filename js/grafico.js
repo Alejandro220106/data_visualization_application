@@ -136,6 +136,23 @@
     }
   }
 
+  /** Frase que explica cómo leer el tipo de gráfico mostrado. */
+  function comoLeerGrafico(tipoGrafico, { tipo, comparar = false }) {
+    const medida = tipoGrafico === TIPOS_GRAFICO.BARRAS_HORIZONTALES ? "la longitud" : "la altura";
+    switch (tipoGrafico) {
+      case TIPOS_GRAFICO.CIRCULAR:
+        return "Cada sector representa la proporción de personas que dio esa respuesta; todos los sectores juntos suman el 100 % de las respuestas válidas.";
+      case TIPOS_GRAFICO.ARANA:
+        return comparar
+          ? "Cada recinto es un polígono de color: cuanto más lejos del centro está su punto en un eje, mayor es el porcentaje de ese recinto en esa respuesta."
+          : "Cada eje es una respuesta posible: cuanto más lejos del centro está el punto, más personas la eligieron.";
+      default:
+        if (comparar) return `En cada categoría, cada color es un recinto y ${medida} de la barra es el porcentaje de ese recinto.`;
+        if (tipo === TIPOS.MULTIRESPUESTA) return `${medida[0].toUpperCase()}${medida.slice(1)} de cada barra indica cuántas personas eligieron esa opción.`;
+        return "Cada barra indica la cantidad de personas y el porcentaje que representa dentro de las respuestas válidas.";
+    }
+  }
+
   function tituloEjeValor(modo) {
     return modo === MODOS.PORCENTAJE ? "Porcentaje de respuestas válidas (%)" : "Cantidad de personas";
   }
@@ -539,6 +556,7 @@
     evaluarGraficos,
     resolverGrafico,
     notaDelGrafico,
+    comoLeerGrafico,
     colorTextoSobre,
     configurarGrafico,
     configurarComparacion,
