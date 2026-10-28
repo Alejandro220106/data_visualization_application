@@ -45,3 +45,9 @@ def test_descarta_filas_y_columnas_vacias():
     tabla, _ = leer_csv(b"A,B\n1,\n,\n2,\n")
     assert list(tabla.columns) == ["A"]
     assert len(tabla) == 2
+
+
+def test_lee_la_encuesta_del_proyecto():
+    tabla, _ = leer_csv((DATOS / "encuesta_ia.csv").read_bytes())
+    assert len(tabla) == 40
+    assert "¿En qué recinto cursas más asignaturas presenciales?" in tabla.columns
