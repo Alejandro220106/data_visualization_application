@@ -12,10 +12,15 @@ PROPORCION_TEXTO_LIBRE = 0.8
 MAX_VALORES_ESCALA = 11
 # Proporción mínima de valores convertibles a número para tratar la columna como numérica.
 PROPORCION_NUMERICA = 0.9
+# Separador que usa Google Forms para las casillas de verificación.
+SEPARADOR_MULTIPLE = ", "
+# Proporción mínima de celdas con varias opciones para considerar la columna multirespuesta.
+PROPORCION_MULTIPLE = 0.2
 
 
 class TipoColumna(Enum):
     CATEGORICA = "categórica"
+    MULTIRESPUESTA = "multirespuesta"
     NUMERICA = "numérica"
     ESCALA = "escala"
     TEXTO_LIBRE = "texto libre"
@@ -35,9 +40,32 @@ def detectar_tipo(serie: pd.Series) -> TipoColumna:
             return TipoColumna.ESCALA
         return TipoColumna.NUMERICA
 
+    if _es_multirespuesta(valores):
+        return TipoColumna.MULTIRESPUESTA
+
     unicos = valores.nunique()
     if unicos <= MAX_CATEGORIAS and unicos / len(valores) < PROPORCION_TEXTO_LIBRE:
         return TipoColumna.CATEGORICA
     if unicos <= 6:
         return TipoColumna.CATEGORICA
     return TipoColumna.TEXTO_LIBRE
+
+
+def expandir_respuestas(serie: pd.Series) -> pd.Series:
+    """Separa las celdas con varias opciones para contar cada opción por separado."""
+    return (
+        serie.dropna()
+        .str.split(SEPARADOR_MULTIPLE)
+        .explode()
+        .str.strip()
+        .replace("", pd.NA)
+        .dropna()
+    )
+
+
+def _es_multirespuesta(valores: pd.Series) -> bool:
+    """Hay celdas con varias opciones y esas opciones se repiten entre filas."""
+    if valores.str.contains(SEPARADOR_MULTIPLE, regex=False).mean() < PROPORCION_MULTIPLE:
+        return False
+    opciones = expandir_respuestas(valores)
+    return opciones.nunique() <= MAX_CATEGORIAS and opciones.nunique() < valores.nunique()

@@ -1,6 +1,6 @@
 import pandas as pd
 
-from graficos.tipos import TipoColumna, detectar_tipo
+from graficos.tipos import TipoColumna, detectar_tipo, expandir_respuestas
 
 
 def serie(*valores):
@@ -35,3 +35,18 @@ def test_columna_vacia_no_es_graficable():
 
 def test_ignora_vacios():
     assert detectar_tipo(serie("A", None, "B", "A", "B", "A")) is TipoColumna.CATEGORICA
+
+
+def test_detecta_multirespuesta():
+    columna = serie("Python, Java", "Python", "C, Python", "Java, C", "Python, Java, C")
+    assert detectar_tipo(columna) is TipoColumna.MULTIRESPUESTA
+
+
+def test_comas_en_texto_libre_no_son_multirespuesta():
+    respuestas = [f"Bien, aunque mejoraría el tema {n}" for n in range(25)]
+    assert detectar_tipo(serie(*respuestas)) is TipoColumna.TEXTO_LIBRE
+
+
+def test_expande_cada_opcion():
+    opciones = expandir_respuestas(serie("Python, Java", "Python", None))
+    assert opciones.value_counts().to_dict() == {"Python": 2, "Java": 1}
