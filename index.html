@@ -45,6 +45,11 @@
             <select id="pregunta"></select>
             <p class="ayuda" id="tipo-pregunta"></p>
           </div>
+          <div class="campo" id="campo-grafico">
+            <label for="tipo-grafico">Tipo de gráfico</label>
+            <select id="tipo-grafico" aria-describedby="ayuda-grafico"></select>
+            <p class="ayuda" id="ayuda-grafico"></p>
+          </div>
           <div class="campo" id="campo-recinto">
             <label for="recinto">Recinto</label>
             <select id="recinto"></select>
@@ -73,9 +78,15 @@
           <h2 id="titulo-grafico">3. Gráfico</h2>
           <button type="button" class="boton" id="descargar">Descargar PNG</button>
         </div>
-        <div class="lienzo" id="contenedor-lienzo">
-          <canvas id="lienzo" role="img"></canvas>
-        </div>
+        <figure class="figura">
+          <div class="lienzo" id="contenedor-lienzo">
+            <canvas id="lienzo" role="img"></canvas>
+          </div>
+          <figcaption class="pie-figura">
+            <p class="pie-figura__fuente" id="pie-fuente"></p>
+            <p class="pie-figura__nota" id="pie-nota"></p>
+          </figcaption>
+        </figure>
       </section>
 
       <section class="tarjeta" id="seccion-lectura" aria-labelledby="titulo-lectura" hidden>
