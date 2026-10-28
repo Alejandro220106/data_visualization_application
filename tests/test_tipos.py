@@ -54,3 +54,12 @@ def test_comas_en_texto_libre_no_son_multirespuesta():
 def test_expande_cada_opcion():
     opciones = expandir_respuestas(serie("Python, Java", "Python", None))
     assert opciones.value_counts().to_dict() == {"Python": 2, "Java": 1}
+
+
+def test_marcas_temporales_con_pocas_respuestas_no_se_grafican():
+    marcas = [f"2026/10/28 9:0{n}:00" for n in range(6)]
+    assert detectar_tipo(serie(*marcas)) is TipoColumna.TEXTO_LIBRE
+
+
+def test_pocas_respuestas_con_repeticiones_son_categoricas():
+    assert detectar_tipo(serie("A", "B", "C", "D", "A")) is TipoColumna.CATEGORICA

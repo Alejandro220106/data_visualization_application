@@ -49,7 +49,8 @@ def detectar_tipo(serie: pd.Series) -> TipoColumna:
     unicos = valores.nunique()
     if unicos <= MAX_CATEGORIAS and unicos / len(valores) < PROPORCION_TEXTO_LIBRE:
         return TipoColumna.CATEGORICA
-    if unicos <= 6:
+    # Con pocas respuestas la proporción no basta: si todas son distintas, es texto libre.
+    if unicos <= MAX_CATEGORIAS and unicos < len(valores) <= MAX_CATEGORIAS:
         return TipoColumna.CATEGORICA
     return TipoColumna.TEXTO_LIBRE
 
