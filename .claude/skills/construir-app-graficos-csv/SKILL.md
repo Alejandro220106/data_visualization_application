@@ -167,6 +167,15 @@ CREATE TABLE IF NOT EXISTS version_esquema (version INTEGER NOT NULL);
 7. README: requisitos, instalación por sistema, uso, dónde se guardan los datos, cómo construir los ejecutables y limitaciones.
 8. Verificación final: `pytest`, `ruff`, y arrancar la app con el CSV de ejemplo para comprobar cada tipo de gráfico, el PNG y el historial.
 
+# Control de versiones
+
+Haz **un commit por cada integración pequeña**; nunca acumules varias piezas en un solo commit. Cada commit debe dejar el repositorio funcionando (las pruebas existentes pasan).
+
+- Un commit por pieza: estructura y configuración, `rutas.py`, `carga_csv.py` + su prueba, `tipos.py` + su prueba, multirespuesta, `visualizacion.py`, exportación PNG, `historial.py`, cada parte de la interfaz, cada script de plataforma, `lanzador.py`, README.
+- El código y su prueba van en el mismo commit; no mezcles en ese commit cambios ajenos.
+- Mensajes en español, en imperativo y breves (por ejemplo, `Agregar detección de columnas multirespuesta`).
+- Trabaja en una rama por funcionalidad (`feat/historial`, `feat/exportar-png`…) y fusiónala en `main` al terminarla.
+
 # Criterios de aceptación
 
 - [ ] `iniciar` abre la app en el navegador en Windows, Linux y macOS con Python 3.11+.
