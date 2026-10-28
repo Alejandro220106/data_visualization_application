@@ -316,6 +316,8 @@
           ticks: {
             color: COLOR_SECUNDARIO,
             precision: 0,
+            // Pocas marcas para que los anillos no tapen el polígono.
+            maxTicksLimit: 6,
             backdropColor: "rgba(255, 255, 255, 0.8)",
             callback: (valor) => (modo === MODOS.PORCENTAJE ? `${valor} %` : valor),
           },
