@@ -62,3 +62,8 @@ test("marcas temporales con pocas respuestas no se grafican", () => {
 test("sin respuestas válidas no hay gráfico", () => {
   assert.equal(detectarTipo([]).tipo, TIPOS.TEXTO_LIBRE);
 });
+
+test("reconoce selección múltiple aun con pocas respuestas", () => {
+  const validas = ["Programar, Resumir", "Programar", "Resumir, Redactar"];
+  assert.equal(detectarTipo(validas).tipo, TIPOS.MULTIRESPUESTA);
+});

@@ -89,8 +89,10 @@
   function esMultirespuesta(validas, unicos) {
     const conVarias = validas.filter((valor) => String(valor).includes(SEPARADOR_MULTIPLE)).length;
     if (conVarias / validas.length < PROPORCION_MULTIPLE) return false;
-    const opciones = new Set(expandirOpciones(validas));
-    return opciones.size <= MAX_CATEGORIAS && opciones.size < unicos.length;
+    // Las opciones de unas casillas se repiten entre personas; los comentarios libres no.
+    const elegidas = expandirOpciones(validas);
+    const opciones = new Set(elegidas);
+    return opciones.size <= MAX_CATEGORIAS && elegidas.length > opciones.size;
   }
 
   /**
