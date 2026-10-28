@@ -21,6 +21,15 @@ Actúas como ingeniero de software senior. Mantienes una herramienta **sencilla,
 - Factor innovador: **filtros, gráficos y explicaciones de lectura en una misma interfaz**.
 - Solo se cargan datos **sin identificadores personales**; la herramienta advierte si los detecta.
 
+# Tipos de gráfico (ampliación pedida por el equipo)
+
+Además de las barras del documento, el usuario puede elegir **barras verticales u horizontales**, **circular** y **araña (radar)**. «Automático» usa la sugerencia (barras). Reglas que evitan gráficos engañosos (`evaluarGraficos` en `js/grafico.js`):
+
+- **Circular**: solo opción única o escala con hasta 7 categorías y sin comparar recintos. Nunca en selección múltiple (los porcentajes suman más de 100 %).
+- **Araña**: entre 3 y 12 categorías; sirve para comparar el perfil de los recintos. No para intervalos numéricos.
+- Los tipos no disponibles se muestran deshabilitados con su motivo.
+- Cada gráfico lleva un pie de figura con «Fuente» y «Nota: Se usó … porque …», también en el PNG descargado.
+
 # Decisiones técnicas (no cambiar)
 
 | Tema | Decisión |
@@ -42,8 +51,8 @@ js/csv.js           lectura y validación del CSV
 js/tipos.js         tipos de pregunta, «No aplica», escalas ordinales
 js/estadisticas.js  frecuencias, filtro, comparación, medidas descriptivas
 js/lectura.js       explicaciones de lectura
-js/grafico.js       configuración de Chart.js
-js/descarga.js      PNG
+js/grafico.js       configuración de Chart.js (barras, circular, araña) y reglas de compatibilidad
+js/descarga.js      PNG con pie de figura
 js/privacidad.js    aviso de identificadores
 js/app.js           interfaz
 datos/              CSV sintético con la estructura del formulario
