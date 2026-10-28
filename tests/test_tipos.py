@@ -20,6 +20,10 @@ def test_detecta_numerica():
     assert detectar_tipo(serie(*valores)) is TipoColumna.NUMERICA
 
 
+def test_edades_con_pocos_valores_son_numericas():
+    assert detectar_tipo(serie("18", "19", "21", "21", "25")) is TipoColumna.NUMERICA
+
+
 def test_decimales_son_numericos():
     assert detectar_tipo(serie("1.5", "2.0", "3.25")) is TipoColumna.NUMERICA
 

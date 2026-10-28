@@ -10,6 +10,8 @@ MAX_CATEGORIAS = 20
 PROPORCION_TEXTO_LIBRE = 0.8
 # Una escala tiene enteros con, como mucho, esta cantidad de valores distintos.
 MAX_VALORES_ESCALA = 11
+# Rango de una escala lineal de Google Forms (de 0 o 1 hasta 10 como máximo).
+RANGO_ESCALA = (0, 10)
 # Proporción mínima de valores convertibles a número para tratar la columna como numérica.
 PROPORCION_NUMERICA = 0.9
 # Separador que usa Google Forms para las casillas de verificación.
@@ -36,7 +38,8 @@ def detectar_tipo(serie: pd.Series) -> TipoColumna:
     if numeros.notna().mean() >= PROPORCION_NUMERICA:
         numeros = numeros.dropna()
         es_entera = (numeros == numeros.round()).all()
-        if es_entera and numeros.nunique() <= MAX_VALORES_ESCALA:
+        en_rango = RANGO_ESCALA[0] <= numeros.min() and numeros.max() <= RANGO_ESCALA[1]
+        if es_entera and en_rango and numeros.nunique() <= MAX_VALORES_ESCALA:
             return TipoColumna.ESCALA
         return TipoColumna.NUMERICA
 
