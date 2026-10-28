@@ -69,3 +69,15 @@ def test_guardar_en_historial(app, carpeta_temporal):
     assert len(guardados) == 1
     assert guardados[0].columna == "¿Qué medio de transporte usas?"
     assert guardados[0].tipo_grafico == "Barras"
+
+
+def test_recuperar_y_eliminar_desde_el_historial(carpeta_temporal):
+    Historial(base=carpeta_temporal).guardar("Edades", "ejemplo_forms.csv", CSV, "Edad", "Caja")
+    app = AppTest.from_file(str(RAIZ / "app.py"), default_timeout=30).run()
+    app.button(key="abrir_1").click().run()
+    assert app.selectbox(key="columna").value == "Edad"
+    assert app.selectbox(key="grafico").value == "Caja"
+
+    app.button(key="eliminar_1").click().run()
+    app.button(key="si_1").click().run()
+    assert Historial(base=carpeta_temporal).listar() == []

@@ -41,6 +41,56 @@ def barra_lateral() -> None:
             st.session_state.id_subida = subido.file_id
             seleccionar_archivo(subido.name, subido.getvalue())
 
+        st.divider()
+        panel_historial()
+
+
+def panel_historial() -> None:
+    st.header("Historial")
+    historial = obtener_historial()
+    busqueda = st.text_input(
+        "Buscar", placeholder="Nombre del análisis", label_visibility="collapsed"
+    )
+    guardados = historial.listar(busqueda)
+    if not guardados:
+        st.caption("No hay análisis guardados." if not busqueda else "Sin resultados.")
+        return
+
+    for analisis in guardados:
+        with st.container(border=True):
+            st.markdown(f"**{analisis.nombre}**")
+            st.caption(f"{analisis.creado_en.replace('T', ' ')} · {analisis.tipo_grafico}")
+            if st.session_state.get("confirmar_eliminar") == analisis.id:
+                st.warning("¿Eliminar este análisis?")
+                si, no = st.columns(2)
+                if si.button("Eliminar", key=f"si_{analisis.id}", type="primary", width="stretch"):
+                    historial.eliminar(analisis.id)
+                    del st.session_state.confirmar_eliminar
+                    st.rerun()
+                if no.button("Cancelar", key=f"no_{analisis.id}", width="stretch"):
+                    del st.session_state.confirmar_eliminar
+                    st.rerun()
+                continue
+            abrir, eliminar = st.columns(2)
+            if abrir.button("Abrir", key=f"abrir_{analisis.id}", width="stretch"):
+                recuperar(historial, analisis)
+            if eliminar.button("Eliminar", key=f"eliminar_{analisis.id}", width="stretch"):
+                st.session_state.confirmar_eliminar = analisis.id
+                st.rerun()
+
+
+def recuperar(historial: Historial, analisis) -> None:
+    """Carga el CSV guardado y restaura la pregunta y el gráfico del análisis."""
+    try:
+        contenido = historial.leer_contenido(analisis)
+    except FileNotFoundError:
+        st.error("El archivo de este análisis ya no existe en la carpeta de datos.")
+        return
+    seleccionar_archivo(analisis.archivo_original, contenido)
+    st.session_state.columna = analisis.columna
+    st.session_state.columna_graficada = analisis.columna
+    st.session_state.grafico = analisis.tipo_grafico
+
 
 def area_principal() -> None:
     archivo = st.session_state.get("archivo")
