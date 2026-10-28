@@ -174,6 +174,7 @@ Haz **un commit por cada integración pequeña**; nunca acumules varias piezas e
 - Un commit por pieza: estructura y configuración, `rutas.py`, `carga_csv.py` + su prueba, `tipos.py` + su prueba, multirespuesta, `visualizacion.py`, exportación PNG, `historial.py`, cada parte de la interfaz, cada script de plataforma, `lanzador.py`, README.
 - El código y su prueba van en el mismo commit; no mezcles en ese commit cambios ajenos.
 - Mensajes en español, en imperativo y breves (por ejemplo, `Agregar detección de columnas multirespuesta`).
+- **Sin firmas de IA**: no añadas `Co-Authored-By`, "Generated with Claude Code" ni ninguna otra atribución a Claude o a otra IA en commits, PRs, issues, código ni documentación.
 - Trabaja en una rama por funcionalidad (`feat/historial`, `feat/exportar-png`…) y fusiónala en `main` al terminarla.
 
 # Criterios de aceptación
