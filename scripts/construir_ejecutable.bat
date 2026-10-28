@@ -12,10 +12,10 @@ if not exist ".venv\Scripts\python.exe" (
 ".venv\Scripts\python.exe" -m PyInstaller --noconfirm --clean --name AppGraficos ^
     --add-data "app.py:." ^
     --collect-all streamlit ^
-    --collect-all kaleido ^
-    --collect-all choreographer ^
+    --collect-data kaleido ^
+    --collect-data choreographer ^
     --collect-data plotly ^
-    --copy-metadata streamlit ^
+    --copy-metadata streamlit --hidden-import kaleido ^
     lanzador.py || exit /b 1
 echo.
 echo Ejecutable generado en dist\AppGraficos\AppGraficos.exe
