@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Herramienta graficadora para visualizar el uso y la dependencia académica percibida de la IA generativa en estudiantes de la UTN, Sede Regional de San Carlos." />
+    <title>Herramienta graficadora</title>
+    <link rel="stylesheet" href="css/estilos.css" />
+  </head>
+  <body>
+    <a class="saltar" href="#contenido">Saltar al contenido</a>
+
+    <header class="encabezado">
+      <div class="contenedor">
+        <h1>Herramienta graficadora</h1>
+        <p class="encabezado__subtitulo">
+          Uso y dependencia académica percibida de la IA generativa · UTN, Sede Regional de San Carlos
+        </p>
+      </div>
+    </header>
+
+    <main id="contenido" class="contenedor">
+      <section class="tarjeta" aria-labelledby="titulo-datos">
+        <h2 id="titulo-datos">1. Datos</h2>
+        <p class="ayuda">
+          Importa el CSV depurado descargado de Google Sheets (Archivo → Descargar → Valores separados por comas).
+        </p>
+        <div class="carga" id="zona-carga">
+          <label class="boton boton--principal" for="archivo">
+            Elegir archivo CSV
+            <input id="archivo" class="oculto-visual" type="file" accept=".csv,text/csv" />
+          </label>
+          <button type="button" class="boton" id="cargar-ejemplo">Usar datos de ejemplo</button>
+          <span class="carga__arrastrar" aria-hidden="true">o arrastra el archivo aquí</span>
+        </div>
+        <p class="estado-archivo" id="estado-archivo" role="status" aria-live="polite"></p>
+        <div id="avisos" class="avisos" aria-live="polite"></div>
+      </section>
+
+      <section class="tarjeta" id="seccion-controles" aria-labelledby="titulo-controles" hidden>
+        <h2 id="titulo-controles">2. Pregunta y filtros</h2>
+        <div class="controles">
+          <div class="campo campo--ancho">
+            <label for="pregunta">Pregunta</label>
+            <select id="pregunta"></select>
+            <p class="ayuda" id="tipo-pregunta"></p>
+          </div>
+          <div class="campo" id="campo-recinto">
+            <label for="recinto">Recinto</label>
+            <select id="recinto"></select>
+          </div>
+          <div class="campo" id="campo-comparar">
+            <span class="campo__etiqueta" id="etiqueta-comparar">Comparación</span>
+            <label class="interruptor">
+              <input type="checkbox" id="comparar" aria-describedby="ayuda-comparar" />
+              <span>Comparar recintos</span>
+            </label>
+            <p class="ayuda" id="ayuda-comparar">Muestra ambos recintos lado a lado, en porcentaje.</p>
+          </div>
+          <fieldset class="campo" id="campo-modo">
+            <legend>Mostrar</legend>
+            <div class="segmentado">
+              <label><input type="radio" name="modo" value="cantidad" checked /> <span>Cantidad</span></label>
+              <label><input type="radio" name="modo" value="porcentaje" /> <span>Porcentaje</span></label>
+            </div>
+          </fieldset>
+        </div>
+        <p class="ayuda" id="preguntas-omitidas"></p>
+      </section>
+
+      <section class="tarjeta tarjeta--grafico" id="seccion-grafico" aria-labelledby="titulo-grafico" hidden>
+        <div class="tarjeta__cabecera">
+          <h2 id="titulo-grafico">3. Gráfico</h2>
+          <button type="button" class="boton" id="descargar">Descargar PNG</button>
+        </div>
+        <div class="lienzo" id="contenedor-lienzo">
+          <canvas id="lienzo" role="img"></canvas>
+        </div>
+      </section>
+
+      <section class="tarjeta" id="seccion-lectura" aria-labelledby="titulo-lectura" hidden>
+        <h2 id="titulo-lectura">Cómo leer este gráfico</h2>
+        <ul class="lectura" id="lectura"></ul>
+        <details class="tabla-detalle">
+          <summary>Ver tabla de frecuencias</summary>
+          <div class="tabla-desplazable" id="tabla"></div>
+        </details>
+      </section>
+    </main>
+
+    <footer class="pie">
+      <div class="contenedor">
+        <p>
+          Los datos se procesan únicamente en este navegador: el archivo no se envía a ningún servidor.
+          Carga solo datos sin identificadores personales.
+        </p>
+        <p>ITI-624 Probabilidad y Estadística para la Computación I · III cuatrimestre 2026</p>
+      </div>
+    </footer>
+
+    <script src="vendor/chart-4.4.7.umd.js"></script>
+    <script src="js/csv.js"></script>
+    <script src="js/tipos.js"></script>
+    <script src="js/estadisticas.js"></script>
+    <script src="js/lectura.js"></script>
+    <script src="js/grafico.js"></script>
+    <script src="js/descarga.js"></script>
+    <script src="js/privacidad.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>
