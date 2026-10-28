@@ -1,0 +1,10 @@
+{
+  "name": "herramienta-graficadora",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Herramienta graficadora web para la encuesta sobre uso académico de IA generativa (UTN, Sede San Carlos)",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/"
+  }
+}
