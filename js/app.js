@@ -23,6 +23,8 @@
     seccionLectura: document.getElementById("seccion-lectura"),
     pregunta: document.getElementById("pregunta"),
     tipoPregunta: document.getElementById("tipo-pregunta"),
+    tipoGrafico: document.getElementById("tipo-grafico"),
+    ayudaGrafico: document.getElementById("ayuda-grafico"),
     campoRecinto: document.getElementById("campo-recinto"),
     recinto: document.getElementById("recinto"),
     campoComparar: document.getElementById("campo-comparar"),
@@ -32,6 +34,8 @@
     preguntasOmitidas: document.getElementById("preguntas-omitidas"),
     contenedorLienzo: document.getElementById("contenedor-lienzo"),
     lienzo: document.getElementById("lienzo"),
+    pieFuente: document.getElementById("pie-fuente"),
+    pieNota: document.getElementById("pie-nota"),
     descargar: document.getElementById("descargar"),
     lectura: document.getElementById("lectura"),
     tabla: document.getElementById("tabla"),
@@ -46,6 +50,9 @@
     grupo: "",
     comparar: false,
     modo: MODOS.CANTIDAD,
+    // null = automático; si no, el tipo elegido (se recuerda aunque una pregunta no lo admita).
+    tipoGrafico: null,
+    fuente: "",
   };
   let grafico = null;
   let anchoAnterior = window.innerWidth;
@@ -127,13 +134,13 @@
       return;
     }
     try {
-      cargarTexto(texto, "Datos de ejemplo (sintéticos)");
+      cargarTexto(texto, "Datos de ejemplo (sintéticos)", { ejemplo: true });
     } catch (error) {
       manejarError(error);
     }
   }
 
-  function cargarTexto(texto, nombre) {
+  function cargarTexto(texto, nombre, { ejemplo = false } = {}) {
     const { columnas, filas, avisos } = leerCSV(texto);
     const preguntas = columnas.map((columna) => ({
       columna,
@@ -150,6 +157,11 @@
     estado.grupos = E.gruposDisponibles(filas, estado.columnaGrupo);
     estado.grupo = "";
     estado.comparar = false;
+    estado.tipoGrafico = null;
+    const anio = new Date().getFullYear();
+    estado.fuente = ejemplo
+      ? `Fuente: datos de ejemplo sintéticos, elaborados para probar la herramienta (${anio}).`
+      : `Fuente: elaboración propia con datos de la encuesta del proyecto (archivo «${nombre}», ${anio}).`;
     // Se empieza por la primera pregunta con más de una respuesta distinta.
     const variada = graficables.find((p) => new Set(filas.map((f) => f[p.columna]).filter(Boolean)).size > 1);
     estado.pregunta = (variada ?? graficables[0]).columna;
@@ -285,6 +297,46 @@
     }
   }
 
+  /**
+   * Llena el selector de tipo de gráfico: «Automático» con la sugerencia, los tipos
+   * no disponibles deshabilitados y, debajo, el motivo de cada restricción.
+   */
+  function actualizarSelectorGrafico(evaluacion, sugerido, mostrado) {
+    const { NOMBRES_GRAFICO } = G.grafico;
+    const automatico = crear("option", `Automático (${NOMBRES_GRAFICO[sugerido].toLowerCase()})`);
+    automatico.value = "";
+    el.tipoGrafico.replaceChildren(
+      automatico,
+      ...evaluacion.map(({ tipoGrafico, nombre, disponible }) => {
+        const opcion = crear("option", disponible ? nombre : `${nombre} (no disponible)`);
+        opcion.value = tipoGrafico;
+        opcion.disabled = !disponible;
+        return opcion;
+      }),
+    );
+    const respetaEleccion = estado.tipoGrafico !== null && mostrado === estado.tipoGrafico;
+    el.tipoGrafico.value = respetaEleccion ? estado.tipoGrafico : "";
+
+    if (estado.tipoGrafico !== null && !respetaEleccion) {
+      const elegido = evaluacion.find((e) => e.tipoGrafico === estado.tipoGrafico);
+      el.ayudaGrafico.textContent = `«${elegido.nombre}» no está disponible para esta pregunta: ${elegido.razon} Se muestran ${NOMBRES_GRAFICO[mostrado].toLowerCase()}.`;
+    } else {
+      el.ayudaGrafico.textContent = evaluacion
+        .filter((e) => !e.disponible)
+        .map((e) => `${e.nombre}: ${e.razon}`)
+        .join(" ");
+    }
+  }
+
+  /** Tipo de gráfico que se dibuja para las categorías actuales. */
+  function elegirGrafico(tipo, categorias, anchoDisponible) {
+    const evaluacion = G.grafico.evaluarGraficos({ tipo, categorias, comparar: estado.comparar });
+    const sugerido = G.grafico.graficoSugerido(tipo, categorias, anchoDisponible);
+    const mostrado = G.grafico.resolverGrafico(estado.tipoGrafico, evaluacion, sugerido);
+    actualizarSelectorGrafico(evaluacion, sugerido, mostrado);
+    return mostrado;
+  }
+
   function render() {
     if (!estado.datos) return;
     const { filas } = estado.datos;
@@ -297,17 +349,19 @@
     let frases;
     let tabla;
     let altura;
+    let tipoGrafico;
 
     if (estado.comparar) {
       const comparacion = E.compararGrupos(filas, columna, estado.columnaGrupo, descripcion);
-      configuracion = G.grafico.configurarComparacion({ pregunta: columna, tipo, comparacion, anchoDisponible });
-      frases = G.lectura.explicarComparacion(tipo, comparacion);
-      tabla = tablaComparacion(columna, comparacion);
-      altura = G.grafico.alturaSugerida(
-        comparacion.categorias.length,
-        configuracion.options.indexAxis === "y",
-        comparacion.grupos.length,
+      tipoGrafico = elegirGrafico(tipo, comparacion.categorias, anchoDisponible);
+      configuracion = G.grafico.configurarComparacion({ pregunta: columna, tipo, comparacion, anchoDisponible, tipoGrafico });
+      frases = G.lectura.explicarComparacion(
+        tipo,
+        comparacion,
+        G.grafico.comoLeerGrafico(tipoGrafico, { tipo, comparar: true }),
       );
+      tabla = tablaComparacion(columna, comparacion);
+      altura = G.grafico.alturaSugerida(tipoGrafico, comparacion.categorias.length, comparacion.grupos.length, anchoDisponible);
     } else {
       // Las categorías siguen el orden general para que filtrar no reordene las barras.
       const general = E.resumir(filas.map((f) => f[columna]), descripcion);
@@ -318,6 +372,8 @@
             general.frecuencias.map((f) => f.categoria),
           )
         : general;
+      const categorias = resumen.frecuencias.map((f) => f.categoria);
+      tipoGrafico = elegirGrafico(tipo, categorias, anchoDisponible);
       configuracion = G.grafico.configurarGrafico({
         pregunta: columna,
         tipo,
@@ -325,16 +381,28 @@
         modo: estado.modo,
         grupo: estado.grupo || null,
         anchoDisponible,
+        tipoGrafico,
       });
-      frases = G.lectura.explicarResumen(tipo, resumen, estado.grupo || null);
+      frases = G.lectura.explicarResumen(
+        tipo,
+        resumen,
+        estado.grupo || null,
+        G.grafico.comoLeerGrafico(tipoGrafico, { tipo, comparar: false }),
+      );
       tabla = tablaSimple(columna, resumen, tipo);
-      altura = G.grafico.alturaSugerida(resumen.frecuencias.length, configuracion.options.indexAxis === "y");
+      altura = G.grafico.alturaSugerida(tipoGrafico, categorias.length, 1, anchoDisponible);
     }
 
     el.contenedorLienzo.style.height = `${altura}px`;
     if (grafico) grafico.destroy();
     grafico = new Chart(el.lienzo, configuracion);
-    el.lienzo.setAttribute("aria-label", `Gráfico de barras: ${columna}. ${frases[0]} La tabla de frecuencias está debajo.`);
+    const nombreGrafico = G.grafico.NOMBRES_GRAFICO[tipoGrafico];
+    el.lienzo.setAttribute(
+      "aria-label",
+      `Gráfico (${nombreGrafico.toLowerCase()}): ${columna}. ${frases[0]} La tabla de frecuencias está debajo.`,
+    );
+    el.pieFuente.textContent = estado.fuente;
+    el.pieNota.textContent = `Nota: ${G.grafico.notaDelGrafico(tipoGrafico, { tipo, comparar: estado.comparar })}`;
     el.lectura.replaceChildren(...frases.map((frase) => crear("li", frase)));
     el.tabla.replaceChildren(tabla);
   }
@@ -346,7 +414,10 @@
       comparar: estado.comparar,
     });
     try {
-      await G.descarga.descargarLienzo(el.lienzo, nombre);
+      await G.descarga.descargarLienzo(el.lienzo, nombre, {
+        fuente: el.pieFuente.textContent,
+        nota: el.pieNota.textContent,
+      });
     } catch (error) {
       mostrarAvisos([error.message], true);
     }
@@ -358,6 +429,10 @@
   el.cargarEjemplo.addEventListener("click", cargarEjemplo);
   el.pregunta.addEventListener("change", () => {
     estado.pregunta = el.pregunta.value;
+    render();
+  });
+  el.tipoGrafico.addEventListener("change", () => {
+    estado.tipoGrafico = el.tipoGrafico.value || null;
     render();
   });
   el.recinto.addEventListener("change", () => {
