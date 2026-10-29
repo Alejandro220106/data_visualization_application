@@ -66,3 +66,10 @@ test("datos todos iguales forman clases válidas", () => {
   const { filas } = distribuirFrecuencias([5, 5, 5], 3);
   assert.equal(filas[0].frecuencia, 3);
 });
+
+test("la mediana de datos agrupados del COSEVI es 65,625 (donde se cruzan las ojivas)", () => {
+  const { medianaAgrupada } = globalThis.Graficadora.distribucion;
+  const { filas } = distribuirFrecuencias(COSEVI, 7);
+  assert.equal(medianaAgrupada(filas), 65.625);
+  assert.equal(medianaAgrupada([]), null);
+});

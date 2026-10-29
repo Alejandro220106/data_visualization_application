@@ -144,3 +144,11 @@ test("la serie cronológica cuenta respuestas por día e incluye los días sin r
   assert.deepEqual(resumen.frecuencias.map((f) => f.cantidad), [2, 0, 1]);
   assert.equal(resumen.omitidas, 1);
 });
+
+test("el resumen numérico informa k, amplitud y decimales de sus clases", () => {
+  const edades = ["18", "19", "20", "22", "25", "30", "31", "40"];
+  const { distribucion } = resumir(edades, describirPregunta(edades));
+  assert.equal(distribucion.k, 4);
+  assert.equal(distribucion.rango, 22);
+  assert.equal(distribucion.decimales, 0);
+});

@@ -140,15 +140,18 @@
     let invalidas = 0;
     let elementos;
     let clases = null;
+    let distribucion = null;
 
     if (descripcion.tipo === TIPOS.NUMERICA) {
       validas = respuestas.filter((v) => aNumero(v) !== null);
       invalidas = respuestas.length - validas.length;
       const numeros = validas.map(aNumero);
-      const { distribucion } = descripcion;
-      elementos = numeros.map((x) => distribucion.clases[indiceDeClase(x, distribucion)].etiqueta);
+      const clasesDefinidas = descripcion.distribucion;
+      elementos = numeros.map((x) => clasesDefinidas.clases[indiceDeClase(x, clasesDefinidas)].etiqueta);
       // Tabla completa del curso: límites, puntos medios y frecuencias acumuladas.
-      clases = tabularFrecuencias(numeros, distribucion);
+      clases = tabularFrecuencias(numeros, clasesDefinidas);
+      const { k, amplitud, decimales, rango } = clasesDefinidas;
+      distribucion = { k, amplitud, decimales, rango };
     } else if (descripcion.tipo === TIPOS.CRONOLOGICA) {
       validas = respuestas.filter((v) => aFecha(v) !== null);
       invalidas = respuestas.length - validas.length;
@@ -190,6 +193,7 @@
         return { categoria, cantidad, porcentaje: personas ? (cantidad / personas) * 100 : 0 };
       }),
       clases,
+      distribucion,
       descriptivas: medidasDescriptivas(validas, elementos, descripcion),
     };
   }

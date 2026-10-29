@@ -97,6 +97,21 @@
     });
   }
 
+  /**
+   * Mediana de datos agrupados: Me = Li + ((n/2 − F) / f) · c, donde Li es el límite real
+   * inferior de la clase que contiene la posición n/2, F la acumulada anterior, f su
+   * frecuencia y c la amplitud. Es el punto donde se cruzan las dos ojivas.
+   */
+  function medianaAgrupada(filas) {
+    const n = filas.at(-1)?.acumuladaMenos ?? 0;
+    if (!n) return null;
+    const indice = filas.findIndex((fila) => fila.acumuladaMenos >= n / 2);
+    const clase = filas[indice];
+    const anterior = indice > 0 ? filas[indice - 1].acumuladaMenos : 0;
+    const amplitud = clase.limiteRealSuperior - clase.limiteRealInferior;
+    return clase.limiteRealInferior + ((n / 2 - anterior) / clase.frecuencia) * amplitud;
+  }
+
   /** Clases y tabla completa en un solo paso. */
   function distribuirFrecuencias(numeros, k) {
     const distribucion = crearClases(numeros, k);
@@ -110,5 +125,6 @@
     indiceDeClase,
     tabularFrecuencias,
     distribuirFrecuencias,
+    medianaAgrupada,
   };
 })(globalThis);
