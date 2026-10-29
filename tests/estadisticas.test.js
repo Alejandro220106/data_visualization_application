@@ -4,6 +4,7 @@ import { test } from "node:test";
 
 import "../js/csv.js";
 import "../js/tipos.js";
+import "../js/distribucion.js";
 import "../js/estadisticas.js";
 
 const G = globalThis.Graficadora;
@@ -85,4 +86,53 @@ test("la comparación usa las mismas categorías en ambos recintos", () => {
   }
   const total = grupos.reduce((t, g) => t + g.resumen.total, 0);
   assert.equal(total, encuesta.filas.length);
+});
+
+// Ejemplos de las diapositivas «Medidas de posición y variabilidad» del curso.
+test("moda: un valor, ninguno o dos, como en los ejemplos del curso", () => {
+  const { calcularModa } = G.estadisticas;
+  assert.deepEqual(calcularModa([14, 15, 17, 17, 21, 21, 21, 21, 33, 36, 40]).modas, [21]);
+  const sinModa = calcularModa([152, 178, 160, 148, 165, 155, 164]);
+  assert.equal(sinModa.sinModa, true);
+  assert.match(sinModa.motivo, /ningún valor se repite/);
+  assert.deepEqual(calcularModa([50, 55, 55, 55, 62, 73, 73, 73, 80]).modas, [55, 73]);
+  assert.equal(calcularModa(["A", "A", "B", "B"]).sinModa, true);
+});
+
+test("mediana con n impar y n par, y su posición (n + 1) / 2", () => {
+  const { medidasNumericas } = G.estadisticas;
+  const impar = medidasNumericas([6, 8, 8, 10, 12, 19, 23]);
+  assert.equal(impar.mediana, 10);
+  assert.equal(impar.posicionMediana, 4);
+  const par = medidasNumericas([3, 4, 4, 5, 16, 19, 25, 30]);
+  assert.equal(par.mediana, 10.5);
+  assert.equal(par.posicionMediana, 4.5);
+});
+
+test("media de una tabla con frecuencias (edades por número de personas)", () => {
+  const tabla = [[18, 2], [20, 4], [22, 2], [25, 2], [30, 1], [36, 1]];
+  const edades = tabla.flatMap(([edad, personas]) => Array(personas).fill(edad));
+  const medidas = G.estadisticas.medidasNumericas(edades);
+  assert.equal(medidas.n, 12);
+  assert.equal(medidas.media, 23);
+});
+
+test("medidas de variabilidad: rango y desviación estándar muestral", () => {
+  const medidas = G.estadisticas.medidasNumericas([2, 4, 4, 4, 5, 5, 7, 9]);
+  assert.equal(medidas.rango, 7);
+  assert.equal(Math.round(medidas.desviacion * 1000) / 1000, 2.138);
+  assert.equal(G.estadisticas.medidasNumericas([5]).desviacion, null);
+});
+
+test("las preguntas numéricas traen la tabla de clases del curso", () => {
+  const edades = ["18", "19", "20", "22", "25", "30", "31", "40"];
+  const resumen = resumir(edades, describirPregunta(edades));
+  assert.equal(resumen.clases.length, resumen.frecuencias.length);
+  assert.equal(resumen.clases.at(-1).acumuladaMenos, 8);
+  assert.deepEqual(resumen.clases.map((c) => c.frecuencia), resumen.frecuencias.map((f) => f.cantidad));
+});
+
+test("las categóricas informan su moda", () => {
+  const { descriptivas } = analizar(["Sí", "Sí", "No"]);
+  assert.deepEqual(descriptivas.modas, ["Sí"]);
 });

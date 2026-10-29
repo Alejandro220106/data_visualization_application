@@ -4,6 +4,7 @@ import { test } from "node:test";
 
 import "../js/csv.js";
 import "../js/tipos.js";
+import "../js/distribucion.js";
 import "../js/estadisticas.js";
 import "../js/lectura.js";
 

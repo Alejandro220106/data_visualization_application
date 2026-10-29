@@ -42,6 +42,8 @@
     const d = resumen.descriptivas;
     if (!d) return null;
     if (d.medianaNiveles) return `La mediana se ubica ${formatearMediana(d.medianaNiveles)}.`;
+    // Las preguntas categóricas solo tienen moda, que ya se describe como la respuesta más frecuente.
+    if (d.media === undefined) return null;
     const rango = `de ${formatearNumero(d.minimo)} a ${formatearNumero(d.maximo)}`;
     if (tipo === TIPOS.NUMERICA) {
       return `Los valores van ${rango}; el promedio es ${formatearNumero(d.media)} y la mediana ${formatearNumero(d.mediana)}. Las barras agrupan los valores en intervalos.`;
