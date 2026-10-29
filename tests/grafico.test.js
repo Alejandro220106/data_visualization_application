@@ -6,6 +6,7 @@ import "../js/csv.js";
 import "../js/tipos.js";
 import "../js/distribucion.js";
 import "../js/estadisticas.js";
+import "../js/tema.js";
 import "../js/grafico.js";
 
 const G = globalThis.Graficadora;
@@ -145,12 +146,29 @@ test("el circular reparte el total con colores y etiquetas legibles", () => {
   assert.match(subtitulo(config), /total = 100 %/);
 });
 
-test("el circular de una escala usa colores que se oscurecen con el nivel", () => {
-  const config = configurar(["1", "2", "3", "4", "5", "5"], { tipoGrafico: TIPOS_GRAFICO.CIRCULAR });
+test("en el tema claro los niveles de una escala se oscurecen", () => {
+  const { TEMAS } = G.tema;
+  const config = configurar(["1", "2", "3", "4", "5", "5"], { tipoGrafico: TIPOS_GRAFICO.CIRCULAR, tema: TEMAS.claro });
   const colores = config.data.datasets[0].backgroundColor;
   assert.equal(new Set(colores).size, 5);
   assert.equal(colorTextoSobre(colores[0]), "#111827");
   assert.equal(colorTextoSobre(colores.at(-1)), "#ffffff");
+});
+
+test("en el tema oscuro los niveles de una escala se aclaran y el fondo es oscuro", () => {
+  const config = configurar(["1", "2", "3", "4", "5", "5"], { tipoGrafico: TIPOS_GRAFICO.CIRCULAR });
+  const colores = config.data.datasets[0].backgroundColor;
+  assert.equal(colorTextoSobre(colores[0]), "#ffffff");
+  assert.equal(colorTextoSobre(colores.at(-1)), "#111827");
+  assert.equal(config.options.plugins.fondo.color, G.tema.TEMAS.oscuro.fondo);
+  assert.equal(config.options.plugins.title.color, G.tema.TEMAS.oscuro.texto);
+});
+
+test("cada tipo registrado tiene nota y forma de lectura", () => {
+  for (const id of Object.values(TIPOS_GRAFICO)) {
+    assert.ok(notaDelGrafico(id, { tipo: TIPOS.ESCALA }).length > 20, id);
+    assert.ok(G.grafico.comoLeerGrafico(id, { tipo: TIPOS.ESCALA }).length > 20, id);
+  }
 });
 
 test("la araña muestra una serie con la escala radial explicada", () => {
