@@ -21,14 +21,27 @@ Actúas como ingeniero de software senior. Mantienes una herramienta **sencilla,
 - Factor innovador: **filtros, gráficos y explicaciones de lectura en una misma interfaz**.
 - Solo se cargan datos **sin identificadores personales**; la herramienta advierte si los detecta.
 
-# Tipos de gráfico (ampliación pedida por el equipo)
+# Tipos de gráfico (ampliación pedida por el equipo, tomada del material del curso)
 
-Además de las barras del documento, el usuario puede elegir **barras verticales u horizontales**, **circular** y **araña (radar)**. «Automático» usa la sugerencia (barras). Reglas que evitan gráficos engañosos (`evaluarGraficos` en `js/grafico.js`):
+Además de las barras del documento hay 14 tipos. «Automático» usa la sugerencia: barras; histograma para numéricas; líneas para la serie cronológica. Cada tipo se registra con `registrarGrafico` (núcleo en `js/grafico.js`, familias en `js/graficos/`) e incluye sus reglas, su nota y su forma de lectura. Reglas que evitan gráficos engañosos:
 
-- **Circular**: solo opción única o escala con hasta 7 categorías y sin comparar recintos. Nunca en selección múltiple (los porcentajes suman más de 100 %).
-- **Araña**: entre 3 y 12 categorías; sirve para comparar el perfil de los recintos. No para intervalos numéricos.
-- Los tipos no disponibles se muestran deshabilitados con su motivo.
+- **Circular, anillo y semicírculo**: solo opción única o escala con hasta 7 categorías y sin comparar. Nunca en selección múltiple (los porcentajes suman más de 100 %).
+- **Anillos concéntricos**: solo al comparar recintos; cada anillo suma el 100 % de su recinto.
+- **Líneas y áreas**: solo datos con orden (escalas, serie cronológica; numéricas solo al comparar).
+- **Picos**: como las barras; se lee la altura, no el área.
+- **Histograma, polígono y ojivas**: solo numéricas sin comparar; usan la distribución por clases del curso.
+- **Araña**: entre 3 y 12 categorías; no para numéricas ni cronológicas.
+- **Pictograma**: hasta 10 categorías y sin comparar; se dibuja sin Chart.js (`dibujar`).
+- Sin cartograma: el estudio no tiene una variable geográfica mapeable.
+- Los tipos no disponibles se muestran deshabilitados, con su motivo en un desplegable.
 - Cada gráfico lleva un pie de figura con «Fuente» y «Nota: Se usó … porque …», también en el PNG descargado.
+
+# Contenidos del curso que la herramienta aplica
+
+- Distribución de frecuencias por clases (Sturges, amplitud redondeada hacia arriba, límites reales, punto medio, acumuladas «menos de» y «más de»), en `js/distribucion.js`.
+- Medidas de posición (media, mediana con posición (n + 1)/2, moda que puede no existir o ser doble) y de variabilidad (rango, desviación estándar muestral).
+- Series estadísticas: cualitativa, cuantitativa, geográfica (recinto) y cronológica (marca temporal).
+- Las pruebas usan los ejemplos resueltos del curso (COSEVI, moda, mediana, media ponderada): no los cambies sin revisar el material.
 
 # Decisiones técnicas (no cambiar)
 
@@ -39,7 +52,9 @@ Además de las barras del documento, el usuario puede elegir **barras verticales
 | Scripts | Scripts clásicos que registran módulos en `globalThis.Graficadora`, para que `index.html` funcione con doble clic (`file://`) y en Node |
 | Datos | El CSV se procesa solo en el navegador; nada se envía a servidores |
 | Seguridad | Todo texto del CSV se inserta con `textContent`, nunca con `innerHTML` |
-| Diseño | Móvil primero; controles táctiles de al menos 44 px; contraste AA |
+| Diseño | Tema oscuro, móvil primero; controles táctiles de al menos 44 px; contraste AA verificado en `tests/tema.test.js` |
+| Colores | Siempre desde `js/tema.js`: tema oscuro en pantalla y claro en el PNG (que se vuelve a dibujar aparte a 1000 px y densidad 2) |
+| Caché | Los recursos locales llevan `?v=AAAAMMDD` en `index.html`; cámbialo en cada publicación |
 | Idioma | Todo en español: interfaz, código, comentarios y README |
 | Pruebas | `node:test` (`npm test`), sin dependencias |
 
@@ -48,10 +63,13 @@ Además de las barras del documento, el usuario puede elegir **barras verticales
 ```
 index.html, css/estilos.css
 js/csv.js           lectura y validación del CSV
-js/tipos.js         tipos de pregunta, «No aplica», escalas ordinales
-js/estadisticas.js  frecuencias, filtro, comparación, medidas descriptivas
+js/tipos.js         tipos de pregunta, «No aplica», escalas ordinales, fechas
+js/distribucion.js  distribución de frecuencias por clases (esquema del curso)
+js/estadisticas.js  frecuencias, filtro, comparación, medidas de posición y variabilidad
+js/tema.js          paletas oscura y clara
 js/lectura.js       explicaciones de lectura
-js/grafico.js       configuración de Chart.js (barras, circular, araña) y reglas de compatibilidad
+js/grafico.js       núcleo: registro de tipos, reglas, piezas comunes, barras, circular y araña
+js/graficos/*.js    familias: circulares, líneas, picos, clases, pictograma
 js/descarga.js      PNG con pie de figura
 js/privacidad.js    aviso de identificadores
 js/app.js           interfaz
@@ -59,7 +77,7 @@ datos/              CSV sintético con la estructura del formulario
 tests/              pruebas por módulo
 ```
 
-La lógica (`csv`, `tipos`, `estadisticas`, `lectura`, `grafico`) no toca el DOM y se prueba en Node. `app.js` solo conecta la interfaz.
+La lógica (`csv`, `tipos`, `distribucion`, `estadisticas`, `tema`, `lectura`, `grafico` y las familias) no toca el DOM salvo el dibujo del pictograma, y se prueba en Node. `app.js` solo conecta la interfaz.
 
 # Reglas estadísticas
 
