@@ -1,4 +1,4 @@
-/* Gráficos de líneas y de áreas para datos con orden: escalas y serie cronológica. */
+/* Gráfico de líneas para datos con orden: escalas, variables numéricas y serie cronológica. */
 (function (raiz) {
   "use strict";
 
@@ -29,7 +29,6 @@
     if (tipo === TIPOS.CATEGORICA || tipo === TIPOS.MULTIRESPUESTA) {
       return "Las líneas unen categorías en orden, y esta pregunta no tiene un orden natural; usa barras.";
     }
-    if (tipo === TIPOS.NUMERICA && !comparar) return "Para una variable numérica usa el polígono de frecuencias.";
     if (categorias.length < 2) return "Necesita al menos 2 categorías para trazar una línea.";
     return null;
   }
@@ -160,19 +159,6 @@
     comoLeer: (contexto) => comoLeerLineas(false, contexto),
     configurar: (c) => configurarLinea(c, false),
     configurarComparacion: (c) => configurarLineaComparacion(c, false),
-    altura: alturaLineas,
-  });
-
-  registrarGrafico({
-    id: "areas",
-    clave: "AREAS",
-    nombre: "Áreas",
-    orden: 75,
-    razonNoDisponible: razonLineas,
-    nota: (contexto) => notaLineas(true, contexto),
-    comoLeer: (contexto) => comoLeerLineas(true, contexto),
-    configurar: (c) => configurarLinea(c, true),
-    configurarComparacion: (c) => configurarLineaComparacion(c, true),
     altura: alturaLineas,
   });
 })(globalThis);

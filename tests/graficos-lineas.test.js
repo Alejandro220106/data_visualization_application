@@ -30,9 +30,8 @@ test("las líneas solo se ofrecen para datos con orden", () => {
   assert.match(razon(nominal, TIPOS_GRAFICO.LINEAS), /orden natural/);
   const escala = evaluarGraficos({ tipo: TIPOS.ESCALA, categorias: ["1", "2", "3"] });
   assert.equal(razon(escala, TIPOS_GRAFICO.LINEAS), null);
-  assert.equal(razon(escala, TIPOS_GRAFICO.AREAS), null);
-  const numerica = evaluarGraficos({ tipo: TIPOS.NUMERICA, categorias: ["1–2", "3–4"] });
-  assert.match(razon(numerica, TIPOS_GRAFICO.LINEAS), /polígono/);
+  const numerica = evaluarGraficos({ tipo: TIPOS.NUMERICA, categorias: ["1–2", "3–4"] }); // las líneas también sirven para clases numéricas
+  assert.equal(razon(numerica, TIPOS_GRAFICO.LINEAS), null);
 });
 
 test("la serie cronológica sugiere líneas y rotula el eje de fechas", () => {
@@ -43,12 +42,6 @@ test("la serie cronológica sugiere líneas y rotula el eje de fechas", () => {
   assert.equal(config.options.scales.x.title.text, "Fecha de respuesta");
 });
 
-test("el área rellena bajo la línea", () => {
-  const config = configurar(["1", "2", "2", "3"], TIPOS_GRAFICO.AREAS);
-  assert.equal(config.data.datasets[0].fill, "origin");
-  assert.equal(config.options.scales.y.beginAtZero, true);
-});
-
 test("la comparación traza una línea por recinto sin etiquetas que se encimen", () => {
   const columna = "Intento resolver la actividad por mi cuenta antes de consultar";
   const descripcion = describirPregunta(encuesta.filas.map((f) => f[columna]));
@@ -57,4 +50,8 @@ test("la comparación traza una línea por recinto sin etiquetas que se encimen"
   assert.equal(config.data.datasets.length, 2);
   assert.ok(config.data.datasets.every((d) => !d.etiquetas));
   assert.equal(config.options.plugins.legend.display, true);
+});
+
+test("solo quedan los 5 tipos pedidos", () => {
+  assert.deepEqual(Object.values(TIPOS_GRAFICO).sort(), ["arana", "barras-horizontales", "barras-verticales", "circular", "lineas"]);
 });

@@ -520,7 +520,7 @@
     nombre: "Circular",
     orden: 40,
     razonNoDisponible: razonSectores,
-    razonComparar: "Un gráfico circular muestra un solo total; para comparar recintos usa barras, anillos concéntricos o araña.",
+    razonComparar: "Un gráfico circular muestra un solo total; para comparar recintos usa barras, líneas o araña.",
     nota: () => "Se usó un gráfico circular para mostrar la proporción de cada respuesta respecto al total de respuestas válidas (total = 100 %).",
     comoLeer: () => "Cada sector representa la proporción de personas que dio esa respuesta; todos los sectores juntos suman el 100 % de las respuestas válidas.",
     configurar: (c) => configurarSectores(c),
