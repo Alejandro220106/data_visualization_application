@@ -5,7 +5,7 @@
   const { TIPOS } = raiz.Graficadora.tipos;
   const { formatearPorcentaje, formatearNumero } = raiz.Graficadora.estadisticas;
   const { registrarGrafico, partirTexto, MODOS, piezas } = raiz.Graficadora.grafico;
-  const { coloresCategorias, subtituloSimple, maxCaracteres } = piezas;
+  const { coloresCategorias, subtituloSimple } = piezas;
 
   // Máximo de figuras por fila: con más, las figuras serían demasiado pequeñas.
   const MAX_FIGURAS = 20;
@@ -31,19 +31,41 @@
     return `Cada figura = ${formatearNumero(unidad)} ${unidad === 1 ? "persona" : "personas"}`;
   }
 
+  /** Parte un texto en líneas que caben en «anchoMaximo» según la función de medición. */
+  function partirPorAncho(texto, anchoMaximo, medir) {
+    const lineas = [];
+    let actual = "";
+    for (const palabra of String(texto).split(/\s+/)) {
+      const prueba = actual ? `${actual} ${palabra}` : palabra;
+      if (actual && medir(prueba) > anchoMaximo) {
+        lineas.push(actual);
+        actual = palabra;
+      } else {
+        actual = prueba;
+      }
+    }
+    if (actual) lineas.push(actual);
+    return lineas;
+  }
+
+  // Medición aproximada cuando no hay lienzo (pruebas): unos 9,5 px por carácter en el título y 7 en el resto.
+  const MEDICION_APROXIMADA = { titulo: (texto) => texto.length * 9.5, texto: (texto) => texto.length * 7 };
+
   /**
    * Geometría del pictograma para un ancho y un alto dados: encabezado, columnas,
    * tamaño de figura y posición de cada fila. No dibuja nada, así se puede probar.
    */
-  function disenarPictograma({ frecuencias, ancho, alto, titulo, subtitulo }) {
+  function disenarPictograma({ frecuencias, ancho, alto, titulo, subtitulo, medicion = MEDICION_APROXIMADA }) {
     const angosto = ancho < 520;
     const maximo = Math.max(1, ...frecuencias.map((f) => f.cantidad));
     const unidad = unidadPictograma(maximo);
     const figurasMaximas = Math.max(1, Math.ceil(maximo / unidad));
-    const lineasTitulo = partirTexto(titulo, maxCaracteres(ancho));
-    const lineasSubtitulo = partirTexto(subtitulo, maxCaracteres(ancho) + 20);
+    const lineasTitulo = partirPorAncho(titulo, ancho - MARGEN * 2, medicion.titulo);
+    const lineasSubtitulo = partirPorAncho(subtitulo, ancho - MARGEN * 2, medicion.texto);
     const altoEncabezado = MARGEN + lineasTitulo.length * 22 + lineasSubtitulo.length * 18 + 14;
-    const anchoEtiqueta = angosto ? 0 : Math.min(Math.round(ancho * 0.3), 220);
+    // La columna de etiquetas se ajusta a la etiqueta más larga (unos 7 px por carácter).
+    const masLarga = Math.max(...frecuencias.map((f) => String(f.categoria).length));
+    const anchoEtiqueta = angosto ? 0 : Math.min(Math.round(ancho * 0.3), 220, Math.max(32, masLarga * 7 + 8));
     const anchoFiguras = ancho - MARGEN * 2 - anchoEtiqueta - ANCHO_VALOR - (angosto ? 0 : 12);
     const altoEtiquetaApilada = angosto ? 20 : 0;
     // El tamaño se limita por el ancho disponible y por el alto de cada fila.
@@ -114,7 +136,19 @@
     ctx.fillRect(0, 0, ancho, alto);
 
     const subtitulo = `${subtituloSimple(c.resumen, c.grupo)} · ${textoUnidad(unidadPictograma(Math.max(1, ...c.resumen.frecuencias.map((f) => f.cantidad))))}`;
-    const diseno = disenarPictograma({ frecuencias: c.resumen.frecuencias, ancho, alto, titulo: c.pregunta, subtitulo });
+    // Se mide el texto con la letra real para que el encabezado nunca se salga del lienzo.
+    const medirCon = (letra) => (texto) => {
+      ctx.font = letra;
+      return ctx.measureText(texto).width;
+    };
+    const diseno = disenarPictograma({
+      frecuencias: c.resumen.frecuencias,
+      ancho,
+      alto,
+      titulo: c.pregunta,
+      subtitulo,
+      medicion: { titulo: medirCon(`700 16px ${FUENTE}`), texto: medirCon(`13px ${FUENTE}`) },
+    });
     const colores = coloresCategorias(c.tema, c.tipo, diseno.filas.length);
 
     let y = MARGEN;
