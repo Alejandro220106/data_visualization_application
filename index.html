@@ -48,7 +48,7 @@
           <div class="campo" id="campo-grafico">
             <label for="tipo-grafico">Tipo de gráfico</label>
             <select id="tipo-grafico" aria-describedby="ayuda-grafico"></select>
-            <p class="ayuda" id="ayuda-grafico"></p>
+            <div class="ayuda" id="ayuda-grafico"></div>
           </div>
           <div class="campo" id="campo-recinto">
             <label for="recinto">Recinto</label>
@@ -76,7 +76,10 @@
       <section class="tarjeta tarjeta--grafico" id="seccion-grafico" aria-labelledby="titulo-grafico" hidden>
         <div class="tarjeta__cabecera">
           <h2 id="titulo-grafico">3. Gráfico</h2>
-          <button type="button" class="boton" id="descargar">Descargar PNG</button>
+          <div class="acciones-grafico">
+            <button type="button" class="boton" id="descargar" aria-describedby="ayuda-descarga">Descargar PNG</button>
+            <p class="ayuda" id="ayuda-descarga">Con fondo blanco, lista para el informe.</p>
+          </div>
         </div>
         <figure class="figura">
           <div class="lienzo" id="contenedor-lienzo">
@@ -90,10 +93,14 @@
       </section>
 
       <section class="tarjeta" id="seccion-lectura" aria-labelledby="titulo-lectura" hidden>
+        <div id="bloque-medidas">
+          <h2 id="titulo-medidas">Medidas de posición y variabilidad</h2>
+          <dl class="medidas" id="medidas" aria-labelledby="titulo-medidas"></dl>
+        </div>
         <h2 id="titulo-lectura">Cómo leer este gráfico</h2>
         <ul class="lectura" id="lectura"></ul>
         <details class="tabla-detalle">
-          <summary>Ver tabla de frecuencias</summary>
+          <summary id="resumen-tabla">Ver tabla de frecuencias</summary>
           <div class="tabla-desplazable" id="tabla"></div>
         </details>
       </section>

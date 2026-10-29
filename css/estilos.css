@@ -139,6 +139,29 @@ h3 {
   margin: 0;
 }
 
+.acciones-grafico {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.acciones-grafico .ayuda {
+  margin: 0;
+  text-align: right;
+}
+
+@media (max-width: 559px) {
+  .acciones-grafico {
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .acciones-grafico .ayuda {
+    text-align: left;
+  }
+}
+
 .ayuda {
   color: var(--color-secundario);
   font-size: 0.875rem;
@@ -147,6 +170,21 @@ h3 {
 
 .ayuda:empty {
   display: none;
+}
+
+.ayuda p {
+  margin: 0 0 4px;
+}
+
+.ayuda-detalle summary {
+  cursor: pointer;
+  color: var(--color-acento);
+  min-height: 24px;
+}
+
+.ayuda-detalle ul {
+  margin: 4px 0 0;
+  padding-left: 18px;
 }
 
 .etiqueta-serie {
