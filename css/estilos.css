@@ -1,21 +1,24 @@
-/* Estilos de la herramienta graficadora: diseño móvil primero, adaptable a computadora. */
+/* Estilos de la herramienta graficadora: tema oscuro, diseño móvil primero, adaptable a computadora. */
 
 :root {
-  color-scheme: light;
-  --color-fondo: #f3f4f6;
-  --color-superficie: #ffffff;
-  --color-texto: #1f2937;
-  --color-secundario: #4b5563;
-  --color-borde: #d1d5db;
+  color-scheme: dark;
+  --color-fondo: #0b1120;
+  /* Igual a TEMAS.oscuro.fondo de js/tema.js, para que el gráfico se funda con su tarjeta. */
+  --color-superficie: #111827;
+  --color-superficie-2: #1f2937;
+  --color-texto: #e5e7eb;
+  --color-secundario: #9ca3af;
+  --color-borde: #374151;
   --color-principal: #2563eb;
-  --color-principal-oscuro: #1d4ed8;
-  --color-foco: #f59e0b;
-  --color-aviso-fondo: #fffbeb;
-  --color-aviso-borde: #f59e0b;
-  --color-error-fondo: #fef2f2;
-  --color-error-borde: #dc2626;
-  --radio: 10px;
-  --sombra: 0 1px 2px rgb(0 0 0 / 0.06), 0 1px 3px rgb(0 0 0 / 0.1);
+  --color-principal-hover: #1d4ed8;
+  --color-acento: #60a5fa;
+  --color-foco: #fbbf24;
+  --color-aviso-fondo: rgb(251 191 36 / 0.12);
+  --color-aviso-borde: #fbbf24;
+  --color-error-fondo: rgb(248 113 113 / 0.14);
+  --color-error-borde: #f87171;
+  --radio: 12px;
+  --sombra: 0 1px 2px rgb(0 0 0 / 0.5), 0 0 0 1px rgb(255 255 255 / 0.05);
   --espacio: 16px;
 }
 
@@ -35,7 +38,8 @@ body {
 }
 
 h1,
-h2 {
+h2,
+h3 {
   line-height: 1.25;
   margin: 0 0 8px;
 }
@@ -46,6 +50,10 @@ h1 {
 
 h2 {
   font-size: 1.125rem;
+}
+
+h3 {
+  font-size: 1rem;
 }
 
 .contenedor {
@@ -66,6 +74,7 @@ h2 {
   z-index: 10;
   padding: 8px 12px;
   background: var(--color-superficie);
+  color: var(--color-texto);
 }
 
 .oculto-visual {
@@ -85,7 +94,8 @@ h2 {
 /* Encabezado y pie */
 
 .encabezado {
-  background: var(--color-principal-oscuro);
+  background: linear-gradient(135deg, #1e3a8a 0%, var(--color-superficie) 85%);
+  border-bottom: 1px solid var(--color-borde);
   color: #ffffff;
   padding: 20px 0;
   margin-bottom: var(--espacio);
@@ -93,7 +103,7 @@ h2 {
 
 .encabezado__subtitulo {
   margin: 0;
-  opacity: 0.9;
+  color: #cbd5e1;
 }
 
 .pie {
@@ -135,6 +145,21 @@ h2 {
   margin: 4px 0 0;
 }
 
+.ayuda:empty {
+  display: none;
+}
+
+.etiqueta-serie {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: rgb(96 165 250 / 0.16);
+  color: #bfdbfe;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
 /* Botones */
 
 .boton {
@@ -145,7 +170,7 @@ h2 {
   padding: 8px 16px;
   border: 1px solid var(--color-borde);
   border-radius: 8px;
-  background: var(--color-superficie);
+  background: var(--color-superficie-2);
   color: var(--color-texto);
   font: inherit;
   font-weight: 600;
@@ -153,7 +178,7 @@ h2 {
 }
 
 .boton:hover {
-  border-color: var(--color-principal);
+  border-color: var(--color-acento);
 }
 
 .boton--principal {
@@ -163,7 +188,7 @@ h2 {
 }
 
 .boton--principal:hover {
-  background: var(--color-principal-oscuro);
+  background: var(--color-principal-hover);
 }
 
 .boton:has(input:focus-visible) {
@@ -190,8 +215,8 @@ h2 {
 }
 
 .carga--arrastrando {
-  border-color: var(--color-principal);
-  background: #eff6ff;
+  border-color: var(--color-acento);
+  background: rgb(96 165 250 / 0.1);
 }
 
 .carga__arrastrar {
@@ -262,14 +287,19 @@ select {
   padding: 8px 12px;
   border: 1px solid var(--color-borde);
   border-radius: 8px;
-  background: var(--color-superficie);
+  background: var(--color-superficie-2);
   color: var(--color-texto);
   font: inherit;
 }
 
+select:hover {
+  border-color: var(--color-acento);
+}
+
 select:disabled {
-  background: var(--color-fondo);
+  background: var(--color-superficie);
   color: var(--color-secundario);
+  border-style: dashed;
 }
 
 .interruptor {
@@ -284,7 +314,7 @@ select:disabled {
 .interruptor input {
   width: 22px;
   height: 22px;
-  accent-color: var(--color-principal);
+  accent-color: var(--color-acento);
 }
 
 .segmentado {
@@ -293,6 +323,7 @@ select:disabled {
   border-radius: 8px;
   overflow: hidden;
   width: fit-content;
+  background: var(--color-superficie-2);
 }
 
 .segmentado label {
@@ -339,7 +370,74 @@ select:disabled {
   height: 420px;
 }
 
-/* Lectura y tabla */
+/* Pie de figura: «Fuente» y «Nota», como en un informe */
+
+.figura {
+  margin: 0;
+}
+
+.pie-figura {
+  margin-top: 12px;
+  font-size: 0.8125rem;
+  color: var(--color-secundario);
+}
+
+.pie-figura p {
+  margin: 0;
+}
+
+.pie-figura__fuente {
+  font-style: italic;
+}
+
+.pie-figura__nota {
+  margin-top: 4px !important;
+}
+
+/* Medidas de posición y variabilidad */
+
+.medidas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+  margin: 0 0 var(--espacio);
+}
+
+.medidas:empty {
+  display: none;
+}
+
+.medida {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+  background: var(--color-superficie-2);
+}
+
+.medida dt {
+  color: var(--color-secundario);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.medida dd {
+  margin: 2px 0 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.medida__detalle {
+  display: block;
+  color: var(--color-secundario);
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+
+/* Lectura y tablas */
 
 .lectura {
   margin: 0;
@@ -358,6 +456,7 @@ select:disabled {
   min-height: 44px;
   display: flex;
   align-items: center;
+  color: var(--color-acento);
 }
 
 .tabla-desplazable {
@@ -381,6 +480,16 @@ td {
   padding: 8px 10px;
   border-bottom: 1px solid var(--color-borde);
   text-align: left;
+}
+
+thead th {
+  background: var(--color-superficie-2);
+  font-size: 0.8125rem;
+}
+
+tfoot th,
+tfoot td {
+  font-weight: 600;
 }
 
 td.numero,
@@ -415,26 +524,9 @@ th.numero {
   }
 }
 
-/* Pie de figura: «Fuente» y «Nota», como en un informe */
-
-.figura {
-  margin: 0;
-}
-
-.pie-figura {
-  margin-top: 12px;
-  font-size: 0.8125rem;
-  color: var(--color-secundario);
-}
-
-.pie-figura p {
-  margin: 0;
-}
-
-.pie-figura__fuente {
-  font-style: italic;
-}
-
-.pie-figura__nota {
-  margin-top: 4px !important;
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto !important;
+    transition: none !important;
+  }
 }
