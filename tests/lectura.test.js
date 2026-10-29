@@ -13,7 +13,7 @@ const { describirPregunta, resumir, compararGrupos } = G.estadisticas;
 const { explicarResumen, explicarComparacion } = G.lectura;
 
 const encuesta = G.csv.leerCSV(
-  readFileSync(new URL("../datos/encuesta_ia.csv", import.meta.url), "utf8"),
+  readFileSync(new URL("./datos/encuesta_ia.csv", import.meta.url), "utf8"),
 );
 const RECINTO = "¿En qué recinto cursas más asignaturas presenciales?";
 

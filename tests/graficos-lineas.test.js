@@ -15,7 +15,7 @@ const { describirPregunta, resumir, compararGrupos } = G.estadisticas;
 const { configurarGrafico, configurarComparacion, evaluarGraficos, graficoSugerido, TIPOS_GRAFICO } = G.grafico;
 const { TIPOS } = G.tipos;
 
-const encuesta = G.csv.leerCSV(readFileSync(new URL("../datos/encuesta_ia.csv", import.meta.url), "utf8"));
+const encuesta = G.csv.leerCSV(readFileSync(new URL("./datos/encuesta_ia.csv", import.meta.url), "utf8"));
 const RECINTO = "¿En qué recinto cursas más asignaturas presenciales?";
 
 const razon = (evaluacion, id) => evaluacion.find((e) => e.tipoGrafico === id).razon;

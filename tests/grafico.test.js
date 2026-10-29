@@ -26,7 +26,7 @@ const {
 const { TIPOS } = G.tipos;
 
 const encuesta = G.csv.leerCSV(
-  readFileSync(new URL("../datos/encuesta_ia.csv", import.meta.url), "utf8"),
+  readFileSync(new URL("./datos/encuesta_ia.csv", import.meta.url), "utf8"),
 );
 const RECINTO = "¿En qué recinto cursas más asignaturas presenciales?";
 const subtitulo = (config) => [].concat(config.options.plugins.subtitle.text).join(" ");

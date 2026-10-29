@@ -5,7 +5,7 @@ import { test } from "node:test";
 import "../js/csv.js";
 
 const { leerCSV, ErrorCSV, detectarSeparador } = globalThis.Graficadora.csv;
-const leerDatos = (nombre) => readFileSync(new URL(`../datos/${nombre}`, import.meta.url), "utf8");
+const leerDatos = (nombre) => readFileSync(new URL(`./datos/${nombre}`, import.meta.url), "utf8");
 
 test("lee la encuesta del proyecto", () => {
   const { columnas, filas, avisos } = leerCSV(leerDatos("encuesta_ia.csv"));
