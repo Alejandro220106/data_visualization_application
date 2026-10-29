@@ -145,8 +145,9 @@
     return modo === MODOS.PORCENTAJE ? "Porcentaje de respuestas válidas (%)" : "Cantidad de personas";
   }
 
+  /** Caracteres por línea del título según el ancho (unos 9,5 px por carácter en negrita de 16 px). */
   function maxCaracteres(anchoDisponible) {
-    return anchoDisponible < 640 ? 38 : 80;
+    return Math.max(20, Math.floor((anchoDisponible - 24) / 9.5));
   }
 
   function conTransparencia(hexadecimal, opacidad) {
@@ -296,7 +297,8 @@
         },
         subtitle: {
           display: true,
-          text: partirTexto(subtitulo, maximo + 20),
+          // El subtítulo usa letra de 13 px: caben más caracteres que en el título.
+          text: partirTexto(subtitulo, Math.round(maximo * 1.35)),
           color: tema.secundario,
           align: "start",
           font: { size: 13 },
