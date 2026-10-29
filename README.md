@@ -40,13 +40,20 @@ Luego abre `http://localhost:8080`.
 
 El documento prevé entregar a los participantes un enlace a la herramienta. Como es un sitio estático, se puede publicar con **GitHub Pages**: *Settings → Pages → Deploy from a branch → main / (root)*. El enlace queda como `https://<usuario>.github.io/data_visualization_application/`.
 
-Para que los participantes vean los datos del estudio sin importar un archivo, reemplaza `datos/encuesta_ia.csv` por el CSV depurado real (sin identificadores personales) y cambia el texto del botón en `index.html`.
+El botón «Usar datos del estudio» carga la encuesta real desde `datos/`, así los participantes ven los resultados sin importar un archivo.
 
 Al publicar una nueva versión, cambia el sufijo `?v=20261028` de los archivos en `index.html` (por ejemplo, por la fecha del cambio). Así los navegadores no mezclan archivos viejos guardados en caché con los nuevos.
 
-## Datos de ejemplo
+## Datos del estudio
 
-`datos/encuesta_ia.csv` contiene **40 respuestas sintéticas** con la misma estructura del primer formulario: marca temporal, elegibilidad, recinto, carrera, nivel, uso en 30 días, frecuencia en 7 días, finalidades (selección múltiple), los tres ítems de dependencia percibida (1–5) y las tres conductas de autonomía (con «No aplica»). No son datos reales.
+`datos/` contiene las respuestas reales descargadas de Google Forms, sin identificadores personales:
+
+- `Uso académico de IA en EcoCampus y Lourdes — ITI-624.csv`: encuesta inicial (54 respuestas).
+- `Evaluación de la herramienta graficadora — ITI-624.csv`: evaluación de la herramienta (50 respuestas).
+
+La descarga de Google Forms separa las casillas con «;» y numera la escala de acuerdo («4 De acuerdo»); la app reconoce ambos formatos y también el de la hoja de cálculo. «No pude evaluarlo» se excluye igual que «No aplica».
+
+Las 40 respuestas sintéticas que usan las pruebas están en `tests/datos/`.
 
 ## Cómo interpreta cada pregunta
 

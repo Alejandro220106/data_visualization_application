@@ -10,7 +10,7 @@
 
   // Límite de tamaño del CSV: una encuesta de este proyecto pesa unos pocos kilobytes.
   const TAMANO_MAXIMO = 5 * 1024 * 1024;
-  const DATOS_EJEMPLO = "datos/encuesta_ia.csv";
+  const DATOS_EJEMPLO = "datos/Uso académico de IA en EcoCampus y Lourdes — ITI-624.csv";
 
   const el = {
     zonaCarga: document.getElementById("zona-carga"),
@@ -136,14 +136,14 @@
       reiniciar();
       mostrarAvisos(
         [
-          "No se pudieron cargar los datos de ejemplo. Si abriste index.html con doble clic, el navegador bloquea esa lectura: usa «Elegir archivo CSV» y selecciona datos/encuesta_ia.csv.",
+          "No se pudieron cargar los datos de ejemplo. Si abriste index.html con doble clic, el navegador bloquea esa lectura: usa «Elegir archivo CSV» y selecciona datos/Uso académico de IA en EcoCampus y Lourdes — ITI-624.csv.",
         ],
         true,
       );
       return;
     }
     try {
-      cargarTexto(texto, "Datos de ejemplo (sintéticos)", { ejemplo: true });
+      cargarTexto(texto, "Datos del estudio", { ejemplo: true });
     } catch (error) {
       manejarError(error);
     }
@@ -169,7 +169,7 @@
     estado.tipoGrafico = null;
     const anio = new Date().getFullYear();
     estado.fuente = ejemplo
-      ? `Fuente: datos de ejemplo sintéticos, elaborados para probar la herramienta (${anio}).`
+      ? `Fuente: elaboración propia con datos de la encuesta del proyecto ITI-624, UTN San Carlos (${anio}).`
       : `Fuente: elaboración propia con datos de la encuesta del proyecto (archivo «${nombre}», ${anio}).`;
     // Se empieza por la primera pregunta del formulario con más de una respuesta distinta
     // (la marca temporal queda disponible como serie cronológica, pero no es la primera).

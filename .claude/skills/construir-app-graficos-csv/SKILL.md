@@ -94,7 +94,7 @@ Haz **un commit por cada integración pequeña**; nunca acumules varias piezas e
 # Criterios de aceptación
 
 - [ ] `index.html` funciona con doble clic y servido por HTTP, en computadora y en teléfono (375 px sin desplazamiento horizontal).
-- [ ] Con `datos/encuesta_ia.csv`, cada pregunta graficable muestra barras con variable, categorías, unidad y *n*.
+- [ ] Con `datos/Uso académico de IA en EcoCampus y Lourdes — ITI-624.csv` (real) y `tests/datos/encuesta_ia.csv` (sintético), cada pregunta graficable muestra barras con variable, categorías, unidad y *n*.
 - [ ] Las escalas aparecen ordenadas por nivel; la selección múltiple, en barras horizontales con nota de más de 100 %.
 - [ ] El filtro por recinto y la comparación EcoCampus–Lourdes funcionan y explican sus porcentajes.
 - [ ] Omisiones y «No aplica» se informan aparte y nunca se cuentan como cero.
