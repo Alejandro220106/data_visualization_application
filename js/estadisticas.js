@@ -2,11 +2,29 @@
 (function (raiz) {
   "use strict";
 
-  const { TIPOS, normalizar, separarRespuestas, expandirOpciones, detectarTipo, aNumero } =
+  const { TIPOS, normalizar, separarRespuestas, expandirOpciones, detectarTipo, aNumero, aFecha } =
     raiz.Graficadora.tipos;
   const { crearClases, indiceDeClase, tabularFrecuencias } = raiz.Graficadora.distribucion;
 
   const ORDENAR_TEXTO = new Intl.Collator("es", { sensitivity: "base" });
+  // Si el período abarca hasta estos días, también se muestran los días sin respuestas.
+  const MAX_DIAS_CONTINUOS = 62;
+  const MS_POR_DIA = 86400000;
+
+  /** «2026-10-13» → «13/10/2026». */
+  function formatearFecha(iso) {
+    const [anio, mes, dia] = iso.split("-");
+    return `${dia}/${mes}/${anio}`;
+  }
+
+  /** Días del período en orden cronológico, incluidos los días sin respuestas si el período es corto. */
+  function diasDelPeriodo(fechasIso) {
+    const unicas = [...new Set(fechasIso)].sort();
+    const inicio = Date.parse(`${unicas[0]}T00:00:00Z`);
+    const dias = Math.round((Date.parse(`${unicas.at(-1)}T00:00:00Z`) - inicio) / MS_POR_DIA) + 1;
+    if (dias > MAX_DIAS_CONTINUOS) return unicas;
+    return Array.from({ length: dias }, (_, i) => new Date(inicio + i * MS_POR_DIA).toISOString().slice(0, 10));
+  }
 
   /** Columna que identifica el recinto declarado por cada participante. */
   function detectarColumnaGrupo(columnas) {
@@ -35,6 +53,9 @@
     const descripcion = { tipo, orden, distribucion: null };
     if (tipo === TIPOS.NUMERICA) {
       descripcion.distribucion = crearClases(validas.map(aNumero).filter((n) => n !== null));
+    }
+    if (tipo === TIPOS.CRONOLOGICA) {
+      descripcion.orden = diasDelPeriodo(validas.map(aFecha).filter(Boolean)).map(formatearFecha);
     }
     return descripcion;
   }
@@ -128,6 +149,10 @@
       elementos = numeros.map((x) => distribucion.clases[indiceDeClase(x, distribucion)].etiqueta);
       // Tabla completa del curso: límites, puntos medios y frecuencias acumuladas.
       clases = tabularFrecuencias(numeros, distribucion);
+    } else if (descripcion.tipo === TIPOS.CRONOLOGICA) {
+      validas = respuestas.filter((v) => aFecha(v) !== null);
+      invalidas = respuestas.length - validas.length;
+      elementos = validas.map((v) => formatearFecha(aFecha(v)));
     } else if (descripcion.tipo === TIPOS.MULTIRESPUESTA) {
       elementos = expandirOpciones(validas);
     } else if (descripcion.tipo === TIPOS.ESCALA) {
@@ -143,7 +168,7 @@
 
     let categorias = categoriasFijas;
     if (!categorias) {
-      if (descripcion.tipo === TIPOS.ESCALA) categorias = descripcion.orden;
+      if (descripcion.tipo === TIPOS.ESCALA || descripcion.tipo === TIPOS.CRONOLOGICA) categorias = descripcion.orden;
       else if (descripcion.tipo === TIPOS.NUMERICA) categorias = descripcion.distribucion.clases.map((c) => c.etiqueta);
       else {
         categorias = [...conteo.keys()].sort(

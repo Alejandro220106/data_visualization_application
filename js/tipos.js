@@ -7,8 +7,12 @@
     MULTIRESPUESTA: "selección múltiple",
     ESCALA: "escala",
     NUMERICA: "numérica",
+    CRONOLOGICA: "cronológica",
     TEXTO_LIBRE: "respuesta abierta",
   });
+
+  // Proporción mínima de fechas reconocibles para tratar la columna como serie cronológica.
+  const PROPORCION_FECHAS = 0.9;
 
   // Máximo de categorías distintas para tratar un texto como opción única.
   const MAX_CATEGORIAS = 20;
@@ -36,6 +40,24 @@
       "Totalmente de acuerdo",
     ],
   ];
+
+  /**
+   * Fecha de calendario («AAAA-MM-DD») de una marca temporal de Google Forms.
+   * Acepta «2026/10/28 9:01:12» y el formato latino «28/10/2026 9:01».
+   */
+  function aFecha(valor) {
+    const texto = String(valor ?? "").trim();
+    let anio;
+    let mes;
+    let dia;
+    let partes = texto.match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})(?:\D|$)/);
+    if (partes) [, anio, mes, dia] = partes.map(Number);
+    else if ((partes = texto.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})(?:\D|$)/))) [, dia, mes, anio] = partes.map(Number);
+    else return null;
+    const fecha = new Date(Date.UTC(anio, mes - 1, dia));
+    if (fecha.getUTCMonth() !== mes - 1 || fecha.getUTCDate() !== dia) return null;
+    return fecha.toISOString().slice(0, 10);
+  }
 
   /** Minúsculas y sin tildes, para comparar etiquetas escritas de forma distinta. */
   function normalizar(texto) {
@@ -116,6 +138,9 @@
       return { tipo: TIPOS.NUMERICA, orden: null };
     }
 
+    const fechas = validas.filter((valor) => aFecha(valor) !== null).length;
+    if (fechas / validas.length >= PROPORCION_FECHAS) return { tipo: TIPOS.CRONOLOGICA, orden: null };
+
     const ordinal = buscarEscalaOrdinal(unicos);
     if (ordinal) return { tipo: TIPOS.ESCALA, orden: ordinal };
 
@@ -140,5 +165,6 @@
     expandirOpciones,
     detectarTipo,
     aNumero,
+    aFecha,
   };
 })(globalThis);

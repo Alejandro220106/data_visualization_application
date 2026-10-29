@@ -54,9 +54,24 @@ test("comas dentro de comentarios no son selección múltiple", () => {
   assert.equal(detectarTipo(comentarios).tipo, TIPOS.TEXTO_LIBRE);
 });
 
-test("marcas temporales con pocas respuestas no se grafican", () => {
+test("la marca temporal es una serie cronológica", () => {
   const marcas = Array.from({ length: 6 }, (_, n) => `2026/10/28 9:0${n}:00`);
-  assert.equal(detectarTipo(marcas).tipo, TIPOS.TEXTO_LIBRE);
+  assert.equal(detectarTipo(marcas).tipo, TIPOS.CRONOLOGICA);
+  assert.equal(detectarTipo(["28/10/2026 9:01", "29/10/2026 10:15"]).tipo, TIPOS.CRONOLOGICA);
+});
+
+test("reconoce fechas de Google Forms en ambos formatos y rechaza fechas imposibles", () => {
+  const { aFecha } = globalThis.Graficadora.tipos;
+  assert.equal(aFecha("2026/10/13 9:00:00"), "2026-10-13");
+  assert.equal(aFecha("2026/10/28 9:01:12 a. m. GMT-6"), "2026-10-28");
+  assert.equal(aFecha("28/10/2026 9:01"), "2026-10-28");
+  assert.equal(aFecha("2026/02/30"), null);
+  assert.equal(aFecha("Programar"), null);
+});
+
+test("las respuestas distintas sin formato de fecha siguen siendo abiertas", () => {
+  const comentarios = Array.from({ length: 6 }, (_, n) => `Comentario ${n}`);
+  assert.equal(detectarTipo(comentarios).tipo, TIPOS.TEXTO_LIBRE);
 });
 
 test("sin respuestas válidas no hay gráfico", () => {

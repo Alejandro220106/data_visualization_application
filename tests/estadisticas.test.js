@@ -136,3 +136,11 @@ test("las categóricas informan su moda", () => {
   const { descriptivas } = analizar(["Sí", "Sí", "No"]);
   assert.deepEqual(descriptivas.modas, ["Sí"]);
 });
+
+test("la serie cronológica cuenta respuestas por día e incluye los días sin respuestas", () => {
+  const marcas = ["2026/10/13 9:00", "2026/10/13 10:00", "2026/10/15 9:30", null];
+  const resumen = analizar(marcas);
+  assert.deepEqual(resumen.frecuencias.map((f) => f.categoria), ["13/10/2026", "14/10/2026", "15/10/2026"]);
+  assert.deepEqual(resumen.frecuencias.map((f) => f.cantidad), [2, 0, 1]);
+  assert.equal(resumen.omitidas, 1);
+});

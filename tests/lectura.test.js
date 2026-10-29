@@ -94,3 +94,13 @@ test("la comparación incluye primero la frase de lectura si se indica", () => {
   const frases = explicarComparacion(descripcion.tipo, comparacion, "Cada recinto es un polígono…");
   assert.equal(frases[0], "Cada recinto es un polígono…");
 });
+
+test("la serie cronológica describe el período y el día con más respuestas", () => {
+  const texto = explicar(["2026/10/13 9:00", "2026/10/13 10:00", "2026/10/15 9:30"]);
+  assert.ok(texto.includes("entre el 13/10/2026 y el 15/10/2026"));
+  assert.ok(texto.includes("El día con más respuestas fue el 13/10/2026: 2 respuestas"));
+});
+
+test("la respuesta más frecuente se identifica como la moda", () => {
+  assert.ok(explicar(["Sí", "Sí", "No"]).includes("respuesta más frecuente (moda)"));
+});

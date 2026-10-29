@@ -26,10 +26,23 @@
     return maximo > 0 ? frecuencias.filter((f) => f.cantidad === maximo) : [];
   }
 
+  /** Serie cronológica: período cubierto y día con más respuestas. */
+  function frasesCronologicas(resumen) {
+    const conRespuestas = resumen.frecuencias.filter((f) => f.cantidad > 0);
+    if (conRespuestas.length === 0) return [];
+    const primeras = masFrecuentes(resumen.frecuencias);
+    const dias = primeras.map((f) => f.categoria).join(" y el ");
+    return [
+      `Las respuestas se recibieron entre el ${conRespuestas[0].categoria} y el ${conRespuestas.at(-1).categoria}.`,
+      `${primeras.length > 1 ? "Los días" : "El día"} con más respuestas ${primeras.length > 1 ? "fueron" : "fue"} el ${dias}: ${plural(primeras[0].cantidad, "respuesta", "respuestas")} (${formatearPorcentaje(primeras[0].porcentaje)}).`,
+    ];
+  }
+
   function fraseMasFrecuente(resumen, tipo) {
     const primeras = masFrecuentes(resumen.frecuencias);
     if (primeras.length === 0) return null;
-    const sujeto = tipo === TIPOS.MULTIRESPUESTA ? "opción más elegida" : "respuesta más frecuente";
+    // La respuesta más frecuente es la moda, como se vio en el curso.
+    const sujeto = tipo === TIPOS.MULTIRESPUESTA ? "opción más elegida (moda)" : "respuesta más frecuente (moda)";
     if (primeras.length > 1) {
       const nombres = primeras.map((f) => `«${f.categoria}»`).join(", ");
       return `Empataron como ${sujeto} ${nombres}, con ${plural(primeras[0].cantidad, "persona", "personas")} cada una (${formatearPorcentaje(primeras[0].porcentaje)}).`;
@@ -71,8 +84,9 @@
     const donde = grupo ? ` de ${grupo}` : "";
     const frases = [
       `Se muestran ${plural(resumen.personas, "respuesta válida", "respuestas válidas")} de ${plural(resumen.total, "participante", "participantes")}${donde}.`,
-      fraseMasFrecuente(resumen, tipo),
-      fraseDescriptiva(resumen, tipo),
+      ...(tipo === TIPOS.CRONOLOGICA
+        ? frasesCronologicas(resumen)
+        : [fraseMasFrecuente(resumen, tipo), fraseDescriptiva(resumen, tipo)]),
     ];
     if (tipo === TIPOS.MULTIRESPUESTA) {
       frases.push(
