@@ -104,3 +104,14 @@ test("la serie cronológica describe el período y el día con más respuestas",
 test("la respuesta más frecuente se identifica como la moda", () => {
   assert.ok(explicar(["Sí", "Sí", "No"]).includes("respuesta más frecuente (moda)"));
 });
+
+test("si todos los días empatan, la serie cronológica lo dice sin enumerarlos", () => {
+  const texto = explicar(["2026/10/13 9:00", "2026/10/14 9:00", "2026/10/15 9:00"]);
+  assert.ok(texto.includes("Todos los días del período recibieron la misma cantidad de respuestas (1 cada uno)."));
+  assert.ok(!texto.includes(" y el 14/10/2026 y el "));
+});
+
+test("varios días empatados se unen con comas y una «y» final", () => {
+  const texto = explicar(["2026/10/13 9:00", "2026/10/13 10:00", "2026/10/14 9:00", "2026/10/15 9:00", "2026/10/15 11:00"]);
+  assert.ok(texto.includes("Los días con más respuestas fueron el 13/10/2026 y el 15/10/2026: 2 respuestas"));
+});

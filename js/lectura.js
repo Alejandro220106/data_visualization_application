@@ -26,15 +26,27 @@
     return maximo > 0 ? frecuencias.filter((f) => f.cantidad === maximo) : [];
   }
 
+  /** «a», «a y b», «a, b y c». */
+  function unirConY(elementos) {
+    return elementos.length <= 1 ? (elementos[0] ?? "") : `${elementos.slice(0, -1).join(", ")} y ${elementos.at(-1)}`;
+  }
+
   /** Serie cronológica: período cubierto y día con más respuestas. */
   function frasesCronologicas(resumen) {
     const conRespuestas = resumen.frecuencias.filter((f) => f.cantidad > 0);
     if (conRespuestas.length === 0) return [];
     const primeras = masFrecuentes(resumen.frecuencias);
-    const dias = primeras.map((f) => f.categoria).join(" y el ");
+    const periodo =
+      conRespuestas.length === 1
+        ? `Todas las respuestas se recibieron el ${conRespuestas[0].categoria}.`
+        : `Las respuestas se recibieron entre el ${conRespuestas[0].categoria} y el ${conRespuestas.at(-1).categoria}.`;
+    if (primeras.length > 1 && primeras.length === resumen.frecuencias.length) {
+      return [periodo, `Todos los días del período recibieron la misma cantidad de respuestas (${formatearNumero(primeras[0].cantidad)} cada uno).`];
+    }
+    const dias = unirConY(primeras.map((f) => `el ${f.categoria}`));
     return [
-      `Las respuestas se recibieron entre el ${conRespuestas[0].categoria} y el ${conRespuestas.at(-1).categoria}.`,
-      `${primeras.length > 1 ? "Los días" : "El día"} con más respuestas ${primeras.length > 1 ? "fueron" : "fue"} el ${dias}: ${plural(primeras[0].cantidad, "respuesta", "respuestas")} (${formatearPorcentaje(primeras[0].porcentaje)}).`,
+      periodo,
+      `${primeras.length > 1 ? "Los días" : "El día"} con más respuestas ${primeras.length > 1 ? "fueron" : "fue"} ${dias}: ${plural(primeras[0].cantidad, "respuesta", "respuestas")} (${formatearPorcentaje(primeras[0].porcentaje)}).`,
     ];
   }
 
