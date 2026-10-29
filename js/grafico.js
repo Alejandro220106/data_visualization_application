@@ -247,6 +247,15 @@
           }
         });
       });
+      // Texto en el centro de un anillo (por ejemplo, el número de respuestas válidas).
+      const arco = tipo === "doughnut" ? chart.getDatasetMeta(0).data[0] : null;
+      if (opciones.centro && arco) {
+        ctx.fillStyle = opciones.color;
+        ctx.font = `700 ${chart.width < 480 ? 14 : 16}px system-ui, -apple-system, "Segoe UI", sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = opciones.centroBase ?? "middle";
+        ctx.fillText(opciones.centro, arco.x, arco.y - (opciones.centroBase === "bottom" ? 6 : 0));
+      }
       ctx.restore();
     },
   };
@@ -462,6 +471,15 @@
     const colores = coloresCategorias(c.tema, c.tipo, categorias.length);
     const enPorcentaje = c.modo === MODOS.PORCENTAJE;
     const angosto = c.anchoDisponible < 640;
+    const comunes = opcionesComunes({
+      tema: c.tema,
+      titulo: c.pregunta,
+      subtitulo: `${subtituloSimple(c.resumen, c.grupo)} · total = 100 %`,
+      maxCaracteres: maxCaracteres(c.anchoDisponible),
+      leyenda: true,
+      posicionLeyenda: forma.leyendaAbajo || angosto ? "bottom" : "right",
+    });
+    comunes.plugins.etiquetasValor = { color: c.tema.texto, centro: forma.centro ?? null, centroBase: forma.centroBase };
     return {
       type: forma.tipo ?? "pie",
       data: {
@@ -486,14 +504,7 @@
         ],
       },
       options: {
-        ...opcionesComunes({
-          tema: c.tema,
-          titulo: c.pregunta,
-          subtitulo: `${subtituloSimple(c.resumen, c.grupo)} · total = 100 %`,
-          maxCaracteres: maxCaracteres(c.anchoDisponible),
-          leyenda: true,
-          posicionLeyenda: forma.leyendaAbajo || angosto ? "bottom" : "right",
-        }),
+        ...comunes,
         layout: { padding: 8 },
         ...(forma.opciones ?? {}),
       },
