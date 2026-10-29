@@ -22,12 +22,14 @@
   const RANGO_ESCALA = [0, 10];
   // Proporción mínima de valores convertibles a número para tratar la columna como numérica.
   const PROPORCION_NUMERICA = 0.9;
-  // Separador que usa Google Forms para las casillas de verificación.
-  const SEPARADOR_MULTIPLE = ", ";
+  // Separadores de las casillas de verificación: la descarga de Google Forms usa «;»
+  // y la hoja de cálculo vinculada usa «, ».
+  const SEPARADOR_PUNTO_Y_COMA = ";";
+  const SEPARADOR_COMA = ", ";
   // Proporción mínima de celdas con varias opciones para considerar la pregunta de selección múltiple.
   const PROPORCION_MULTIPLE = 0.2;
   // Respuestas que se excluyen de los porcentajes válidos y se informan por separado.
-  const RESPUESTAS_NO_APLICA = ["no aplica", "n/a", "na"];
+  const RESPUESTAS_NO_APLICA = ["no aplica", "n/a", "na", "no pude evaluarlo"];
 
   // Escalas de texto del formulario, ordenadas de menor a mayor.
   const ESCALAS_ORDINALES = [
@@ -39,6 +41,7 @@
       "De acuerdo",
       "Totalmente de acuerdo",
     ],
+    ["Primer año", "Segundo año", "Tercer año", "Cuarto año o superior"],
   ];
 
   /**
@@ -86,33 +89,45 @@
     return Number.isFinite(numero) ? numero : null;
   }
 
+  /** «;» si alguna celda lo usa; si no, la coma de la hoja de cálculo. */
+  function detectarSeparador(validas) {
+    return validas.some((valor) => String(valor).includes(SEPARADOR_PUNTO_Y_COMA)) ? SEPARADOR_PUNTO_Y_COMA : SEPARADOR_COMA;
+  }
+
   /** Separa las celdas con varias opciones para contar cada opción por separado. */
-  function expandirOpciones(validas) {
+  function expandirOpciones(validas, separador = detectarSeparador(validas)) {
     return validas.flatMap((valor) =>
       String(valor)
-        .split(SEPARADOR_MULTIPLE)
+        .split(separador)
         .map((opcion) => opcion.trim())
         .filter(Boolean),
     );
   }
 
+  /** Quita el número inicial de etiquetas como «4 De acuerdo». */
+  const sinNumero = (texto) => normalizar(texto).replace(/^\d+\s*[-.)]?\s*/, "");
+
   function buscarEscalaOrdinal(unicos) {
-    const normalizados = unicos.map(normalizar);
+    const normalizados = unicos.map(sinNumero);
     for (const escala of ESCALAS_ORDINALES) {
       const niveles = escala.map(normalizar);
       if (normalizados.every((valor) => niveles.includes(valor))) {
         // Se conservan las etiquetas tal como aparecen en los datos cuando existen.
-        return escala.map((nivel) => unicos.find((valor) => normalizar(valor) === normalizar(nivel)) ?? nivel);
+        return escala.map((nivel) => unicos.find((valor) => sinNumero(valor) === normalizar(nivel)) ?? nivel);
       }
     }
     return null;
   }
 
   function esMultirespuesta(validas, unicos) {
-    const conVarias = validas.filter((valor) => String(valor).includes(SEPARADOR_MULTIPLE)).length;
-    if (conVarias / validas.length < PROPORCION_MULTIPLE) return false;
+    const separador = detectarSeparador(validas);
+    const conVarias = validas.filter((valor) => String(valor).includes(separador)).length;
+    // «;» no aparece en el texto de una opción: basta una celda con varias. La coma pide más evidencia.
+    if (conVarias === 0 || (separador === SEPARADOR_COMA && conVarias / validas.length < PROPORCION_MULTIPLE)) return false;
+    // Si todas las celdas llevan coma, la coma es parte del texto de la opción («Sí, con ayuda»).
+    if (separador === SEPARADOR_COMA && conVarias === validas.length) return false;
     // Las opciones de unas casillas se repiten entre personas; los comentarios libres no.
-    const elegidas = expandirOpciones(validas);
+    const elegidas = expandirOpciones(validas, separador);
     const opciones = new Set(elegidas);
     return opciones.size <= MAX_CATEGORIAS && elegidas.length > opciones.size;
   }
@@ -163,6 +178,7 @@
     esNoAplica,
     separarRespuestas,
     expandirOpciones,
+    detectarSeparador,
     detectarTipo,
     aNumero,
     aFecha,

@@ -82,3 +82,24 @@ test("reconoce selección múltiple aun con pocas respuestas", () => {
   const validas = ["Programar, Resumir", "Programar", "Resumir, Redactar"];
   assert.equal(detectarTipo(validas).tipo, TIPOS.MULTIRESPUESTA);
 });
+
+test("reconoce la escala de acuerdo numerada de la descarga de Google Forms", () => {
+  const resultado = detectarTipo(["4 De acuerdo", "2 En desacuerdo", "5 Totalmente de acuerdo", "4 De acuerdo"]);
+  assert.equal(resultado.tipo, TIPOS.ESCALA);
+  assert.deepEqual(resultado.orden, ["Totalmente en desacuerdo", "2 En desacuerdo", "Ni de acuerdo ni en desacuerdo", "4 De acuerdo", "5 Totalmente de acuerdo"]);
+});
+
+test("«No pude evaluarlo» se excluye como «No aplica»", () => {
+  assert.equal(esNoAplica("No pude evaluarlo"), true);
+});
+
+test("separa las casillas con «;» aunque pocas personas marquen varias", () => {
+  const validas = ["Ninguna", "Ninguna", "Ninguna", "Ninguna", "Ninguna", "Texto pequeño", "Texto pequeño", "Ninguna", "Ninguna", "Texto pequeño;Filtros"];
+  assert.equal(detectarTipo(validas).tipo, TIPOS.MULTIRESPUESTA);
+  assert.deepEqual(expandirOpciones(["A;B", "B"]), ["A", "B", "B"]);
+});
+
+test("una opción con coma en su texto no se toma como selección múltiple", () => {
+  const validas = ["Sí, con ayuda", "Sí, sin ayuda", "Sí, sin ayuda", "Sí, con ayuda"];
+  assert.equal(detectarTipo(validas).tipo, TIPOS.CATEGORICA);
+});
