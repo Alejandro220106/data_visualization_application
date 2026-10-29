@@ -8,9 +8,9 @@ Está construida con **HTML, CSS y JavaScript** y usa **Chart.js** como componen
 
 - Importa el CSV depurado exportado desde Google Forms / Google Sheets (también se puede arrastrar el archivo).
 - Permite seleccionar la variable (pregunta) de interés e indica su tipo y su **serie estadística** (cualitativa, cuantitativa, geográfica o cronológica).
-- Genera **gráficos de barras** de frecuencias, sugeridos automáticamente, y permite cambiar a otros **14 tipos de gráfico** del material del curso cuando la pregunta los admite.
+- Genera **gráficos de barras** de frecuencias, sugeridos automáticamente, y permite cambiar a **5 tipos de gráfico**: barras verticales, barras horizontales, circular, líneas y araña cuando la pregunta los admite.
 - Muestra las **escalas con barras ordenadas** por nivel: 1–5, 0–7 días, Nunca → Siempre y Totalmente en desacuerdo → Totalmente de acuerdo.
-- **Filtra por recinto** y **compara EcoCampus y Lourdes** (barras agrupadas, picos, líneas, áreas, anillos concéntricos o araña), con porcentajes calculados dentro de cada recinto.
+- **Filtra por recinto** y **compara EcoCampus y Lourdes** (barras agrupadas, líneas o araña), con porcentajes calculados dentro de cada recinto.
 - Cada gráfico identifica la variable (título), las categorías (eje), la unidad de medida (título del eje) y el número de respuestas válidas (*n* en el subtítulo).
 - Identifica las preguntas de **selección múltiple**: cuenta cada opción y calcula los porcentajes sobre las personas que respondieron, por lo que pueden sumar más de 100 %.
 - Los **valores faltantes no se transforman en ceros**. Las omisiones y las respuestas **«No aplica»** se excluyen de los porcentajes válidos y se informan por separado.
@@ -55,7 +55,7 @@ Al publicar una nueva versión, cambia el sufijo `?v=20261028` de los archivos e
 | Opción única | Cualitativa | Texto con pocas categorías repetidas | Barras de mayor a menor frecuencia |
 | Selección múltiple | Cualitativa | Celdas con opciones separadas por «, » que se repiten entre personas | Barras horizontales; % sobre personas |
 | Escala | Cualitativa ordinal o cuantitativa discreta | Enteros entre 0 y 10, o niveles Nunca → Siempre / Totalmente en desacuerdo → Totalmente de acuerdo | Barras en el orden de la escala, con todos sus niveles |
-| Numérica | Cuantitativa | Números fuera del rango de escala (por ejemplo, edades o promedios) | Histograma de la distribución por clases |
+| Numérica | Cuantitativa | Números fuera del rango de escala (por ejemplo, edades o promedios) | Barras por clases |
 | Fecha (marca temporal) | Cronológica | Fechas como «2026/10/28 9:01» o «28/10/2026» | Líneas de respuestas por día |
 | Recinto | Geográfica | Encabezado con la palabra «recinto» | Barras |
 | Respuesta abierta | — | Casi todas las respuestas distintas | No se grafica |
@@ -69,15 +69,9 @@ El selector «Tipo de gráfico» empieza en **Automático**. Los tipos que no co
 | Tipo | Cuándo se ofrece |
 |---|---|
 | Barras verticales y horizontales | Siempre |
-| Picos (barras triangulares) | Siempre; se lee la altura del pico, no su área |
-| Circular, anillo y semicírculo | Opción única, escala o recinto con hasta 7 categorías, sin comparar. Nunca en selección múltiple: sus porcentajes suman más de 100 % |
-| Anillos concéntricos | Solo al comparar recintos: cada anillo suma el 100 % de su recinto |
-| Líneas y áreas | Datos con orden: escalas y serie cronológica (y numéricas al comparar) |
-| Histograma, polígono de frecuencias y ojivas | Variables numéricas, sin comparar; usan la distribución por clases del curso |
-| Araña (radar) | Entre 3 y 12 categorías; también para comparar el perfil de los recintos |
-| Pictograma | Hasta 10 categorías, sin comparar: cada figura de persona vale 1, 2, 5, 10… personas |
-
-El cartograma (mapa) del material del curso no se incluye porque el estudio no tiene una variable geográfica que se pueda mapear: los recintos son dos sedes de un mismo cantón.
+| Circular | Opción única, escala o recinto con hasta 7 categorías, sin comparar. Nunca en selección múltiple |
+| Líneas | Datos con orden: escalas, variables numéricas y serie cronológica |
+| Araña (radar) | Entre 3 y 12 categorías; también para comparar recintos |
 
 ## Distribución de frecuencias por clases
 
@@ -87,7 +81,6 @@ Para variables numéricas se usa el esquema de la clase 4:
 - **Amplitud**: (rango + 1 unidad) / k, redondeada hacia arriba para que el valor máximo quede dentro.
 - **Límites reales**: media unidad de medida por fuera de los límites indicados (por ejemplo, 28,5–39,5 para la clase 29–39).
 - **Punto medio** (xi), **fi**, **fr** y acumuladas **«menos de»** y **«más de»**.
-- Las **ojivas** se cruzan en la mediana de los datos agrupados: Me = Li + ((n/2 − F) / f) · c.
 
 ## Tema oscuro y exportación
 
@@ -105,11 +98,7 @@ js/estadisticas.js        Frecuencias, filtro, comparación por recinto y medida
 js/tema.js                Paletas oscura (pantalla) y clara (PNG) con contraste verificado
 js/lectura.js             Explicaciones de lectura
 js/grafico.js             Núcleo: registro de tipos, reglas, barras, circular y araña
-js/graficos/circulares.js Anillo, semicírculo y anillos concéntricos
-js/graficos/lineas.js     Líneas y áreas
-js/graficos/picos.js      Picos (barras triangulares)
-js/graficos/clases.js     Histograma, polígono de frecuencias y ojivas
-js/graficos/pictograma.js Pictograma de personas (dibujado sin Chart.js)
+js/graficos/lineas.js     Líneas
 js/descarga.js            PNG con pie de figura
 js/privacidad.js          Aviso de identificadores personales
 js/app.js                 Interfaz: conecta todo lo anterior

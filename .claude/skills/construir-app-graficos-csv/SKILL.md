@@ -21,20 +21,15 @@ Actúas como ingeniero de software senior. Mantienes una herramienta **sencilla,
 - Factor innovador: **filtros, gráficos y explicaciones de lectura en una misma interfaz**.
 - Solo se cargan datos **sin identificadores personales**; la herramienta advierte si los detecta.
 
-# Tipos de gráfico (ampliación pedida por el equipo, tomada del material del curso)
+# Tipos de gráfico (pedido del equipo)
 
-Además de las barras del documento hay 14 tipos. «Automático» usa la sugerencia: barras; histograma para numéricas; líneas para la serie cronológica. Cada tipo se registra con `registrarGrafico` (núcleo en `js/grafico.js`, familias en `js/graficos/`) e incluye sus reglas, su nota y su forma de lectura. Reglas que evitan gráficos engañosos:
+Solo 5 tipos, los de los ejemplos del equipo: **barras verticales**, **barras horizontales**, **circular**, **líneas** y **araña (radar)**. No agregues otros. «Automático» sugiere barras (líneas para la serie cronológica). Reglas:
 
-- **Circular, anillo y semicírculo**: solo opción única o escala con hasta 7 categorías y sin comparar. Nunca en selección múltiple (los porcentajes suman más de 100 %).
-- **Anillos concéntricos**: solo al comparar recintos; cada anillo suma el 100 % de su recinto.
-- **Líneas y áreas**: solo datos con orden (escalas, serie cronológica; numéricas solo al comparar).
-- **Picos**: como las barras; se lee la altura, no el área.
-- **Histograma, polígono y ojivas**: solo numéricas sin comparar; usan la distribución por clases del curso.
-- **Araña**: entre 3 y 12 categorías; no para numéricas ni cronológicas.
-- **Pictograma**: hasta 10 categorías y sin comparar; se dibuja sin Chart.js (`dibujar`).
-- Sin cartograma: el estudio no tiene una variable geográfica mapeable.
-- Los tipos no disponibles se muestran deshabilitados, con su motivo en un desplegable.
-- Cada gráfico lleva un pie de figura con «Fuente» y «Nota: Se usó … porque …», también en el PNG descargado.
+- **Circular**: opción única o escala con hasta 7 categorías, sin comparar. Nunca en selección múltiple.
+- **Líneas**: solo datos con orden (escalas, numéricas, serie cronológica).
+- **Araña**: entre 3 y 12 categorías.
+- Los no disponibles se deshabilitan con su motivo; cada gráfico lleva pie de figura con «Fuente» y «Nota».
+- No cambies el estilo visual (tema oscuro) sin que el equipo lo pida.
 
 # Contenidos del curso que la herramienta aplica
 
