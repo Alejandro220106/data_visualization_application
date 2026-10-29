@@ -12,9 +12,12 @@
     return punto === -1 ? 0 : Math.min(MAX_DECIMALES, texto.length - punto - 1);
   }
 
-  /** Cantidad de clases según la regla de Sturges: k = 1 + 3,322 · log10(n), redondeado hacia arriba. */
+  /**
+   * Cantidad de clases según la regla de Sturges: k = 1 + 3,322 · log10(n), redondeado hacia arriba.
+   * Se usa la forma exacta 1 + log2(n): con 3,322 las potencias de 2 (como n = 8) ganarían una clase de más.
+   */
   function clasesSturges(n) {
-    return Math.max(1, Math.ceil(1 + 3.322 * Math.log10(Math.max(1, n))));
+    return Math.max(1, Math.ceil(1 + Math.log2(Math.max(1, n)) - 1e-9));
   }
 
   function formatearLimite(valor, decimales) {

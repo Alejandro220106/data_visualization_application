@@ -73,3 +73,9 @@ test("la mediana de datos agrupados del COSEVI es 65,625 (donde se cruzan las oj
   assert.equal(medianaAgrupada(filas), 65.625);
   assert.equal(medianaAgrupada([]), null);
 });
+
+test("Sturges no agrega una clase de más en potencias de 2", () => {
+  assert.equal(clasesSturges(8), 4);
+  assert.equal(clasesSturges(16), 5);
+  assert.equal(clasesSturges(9), 5);
+});
