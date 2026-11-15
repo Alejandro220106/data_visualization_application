@@ -15,6 +15,7 @@ for (const tema of Object.values(TEMAS)) {
     assert.ok(contraste(tema.texto, tema.fondo) >= 4.5);
     assert.ok(contraste(tema.secundario, tema.fondo) >= 4.5);
     assert.ok(contraste(tema.principal, tema.fondo) >= 3);
+    assert.ok(contraste(tema.destacado, tema.fondo) >= 3);
     for (const color of tema.grupos.slice(0, 2)) assert.ok(contraste(color, tema.fondo) >= 3, color);
   });
 }
