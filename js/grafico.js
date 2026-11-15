@@ -214,8 +214,9 @@
       const { ctx } = chart;
       const tipo = chart.config.type;
       const horizontal = chart.options.indexAxis === "y";
+      const escala = opciones.escala ?? 1;
       ctx.save();
-      ctx.font = `600 ${chart.width < 480 ? 11 : 12}px system-ui, -apple-system, "Segoe UI", sans-serif`;
+      ctx.font = `600 ${Math.round((chart.width < 480 ? 11 : 12) * escala)}px system-ui, -apple-system, "Segoe UI", sans-serif`;
       chart.data.datasets.forEach((dataset, i) => {
         const meta = chart.getDatasetMeta(i);
         if (meta.hidden || !dataset.etiquetas) return;
@@ -236,15 +237,15 @@
             const distancia = Math.hypot(dx, dy) || 1;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            ctx.fillText(texto, elemento.x + (dx / distancia) * 18, elemento.y + (dy / distancia) * 14);
+            ctx.fillText(texto, elemento.x + (dx / distancia) * 18 * escala, elemento.y + (dy / distancia) * 14 * escala);
           } else if (horizontal) {
             ctx.textAlign = "left";
             ctx.textBaseline = "middle";
-            ctx.fillText(texto, elemento.x + 6, elemento.y);
+            ctx.fillText(texto, elemento.x + 6 * escala, elemento.y);
           } else {
             ctx.textAlign = "center";
             ctx.textBaseline = "bottom";
-            ctx.fillText(texto, elemento.x, elemento.y - (tipo === "line" ? 8 : 4));
+            ctx.fillText(texto, elemento.x, elemento.y - (tipo === "line" ? 8 : 4) * escala);
           }
         });
       });
@@ -252,7 +253,7 @@
       const arco = tipo === "doughnut" ? chart.getDatasetMeta(0).data[0] : null;
       if (opciones.centro && arco) {
         ctx.fillStyle = opciones.color;
-        ctx.font = `700 ${chart.width < 480 ? 14 : 16}px system-ui, -apple-system, "Segoe UI", sans-serif`;
+        ctx.font = `700 ${Math.round((chart.width < 480 ? 14 : 16) * escala)}px system-ui, -apple-system, "Segoe UI", sans-serif`;
         ctx.textAlign = "center";
         ctx.textBaseline = opciones.centroBase ?? "middle";
         ctx.fillText(opciones.centro, arco.x, arco.y - (opciones.centroBase === "bottom" ? 6 : 0));
@@ -276,7 +277,44 @@
 
   function animacion() {
     const reducirMovimiento = raiz.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    return reducirMovimiento ? false : { duration: 250 };
+    return reducirMovimiento ? false : { duration: 650, easing: "easeOutQuart" };
+  }
+
+  /**
+   * Agranda una configuración ya armada para pantallas anchas: letras (títulos, ejes, leyenda,
+   * tooltip y etiquetas de valor) y grosor máximo de las barras, para que acompañen al gráfico.
+   * El PNG se arma a ancho fijo y no lo usa.
+   */
+  function escalarParaPantalla(configuracion, factor) {
+    if (!(factor > 1)) return configuracion;
+    const base = raiz.Chart?.defaults?.font?.size ?? 12;
+    const agrandar = (fuente = {}, tamano = base) => ({ ...fuente, size: Math.round((fuente.size ?? tamano) * factor) });
+    const opciones = configuracion.options ?? {};
+    const plugins = opciones.plugins ?? {};
+    if (plugins.title) plugins.title.font = agrandar(plugins.title.font);
+    if (plugins.subtitle) plugins.subtitle.font = agrandar(plugins.subtitle.font);
+    if (plugins.legend) {
+      const etiquetas = plugins.legend.labels ?? {};
+      plugins.legend.labels = {
+        ...etiquetas,
+        font: agrandar(etiquetas.font),
+        boxWidth: Math.round((etiquetas.boxWidth ?? 40) * factor),
+      };
+    }
+    if (plugins.tooltip) {
+      plugins.tooltip.titleFont = agrandar(plugins.tooltip.titleFont);
+      plugins.tooltip.bodyFont = agrandar(plugins.tooltip.bodyFont);
+    }
+    if (plugins.etiquetasValor) plugins.etiquetasValor.escala = factor;
+    for (const eje of Object.values(opciones.scales ?? {})) {
+      if (eje.ticks) eje.ticks.font = agrandar(eje.ticks.font);
+      if (eje.title) eje.title.font = agrandar(eje.title.font);
+      if (eje.pointLabels) eje.pointLabels.font = agrandar(eje.pointLabels.font);
+    }
+    for (const serie of configuracion.data?.datasets ?? []) {
+      if (serie.maxBarThickness) serie.maxBarThickness = Math.round(serie.maxBarThickness * factor * 1.25);
+    }
+    return configuracion;
   }
 
   /** Opciones compartidas por todos los gráficos: encabezado, leyenda, tooltip, colores y fondo. */
@@ -664,6 +702,7 @@
     configurarGrafico,
     configurarComparacion,
     alturaSugerida,
+    escalarParaPantalla,
     tieneDibujoPropio,
     dibujarGrafico,
     // Piezas para registrar otras familias de gráficos.
