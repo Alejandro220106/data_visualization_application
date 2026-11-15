@@ -5,9 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="Herramienta graficadora para visualizar el uso y la dependencia académica percibida de la IA generativa en estudiantes de la UTN, Sede Regional de San Carlos." />
     <title>Herramienta graficadora</title>
-    <link rel="stylesheet" href="css/estilos.css?v=20261029a" />
+    <link rel="stylesheet" href="css/estilos.css?v=20261123" />
   </head>
-  <body>
+  <body class="con-cortina">
+    <!-- Pantalla de inicio: una cortina de garaje que se alza al pulsar la flecha (js/inicio.js). -->
+    <div class="cortina" id="cortina" role="dialog" aria-modal="true" aria-labelledby="cortina-titulo" aria-describedby="cortina-lema">
+      <div class="cortina__lona">
+        <!-- Chispas de fogata que suben desde abajo; las dibuja js/inicio.js. -->
+        <canvas class="cortina__chispas" id="chispas" aria-hidden="true"></canvas>
+        <div class="cortina__texto">
+          <p class="cortina__titulo" id="cortina-titulo">Herramienta graficadora</p>
+          <p class="cortina__lema" id="cortina-lema">Un ITI es un ITI</p>
+        </div>
+        <button type="button" class="cortina__abrir" id="abrir-cortina" aria-label="Abrir la herramienta">
+          <!-- Dos puntas de flecha, una encima de la otra, que se encienden de abajo hacia arriba. -->
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path class="cortina__punta cortina__punta--arriba" d="m6 11 6-6 6 6" />
+            <path class="cortina__punta cortina__punta--abajo" d="m6 19 6-6 6 6" />
+          </svg>
+        </button>
+        <div class="cortina__zocalo" aria-hidden="true"><span class="cortina__manija"></span></div>
+      </div>
+      <div class="cortina__caja" aria-hidden="true"></div>
+    </div>
+
     <a class="saltar" href="#contenido">Saltar al contenido</a>
 
     <header class="encabezado">
@@ -19,114 +40,130 @@
       </div>
     </header>
 
-    <main id="contenido" class="contenedor">
-      <section class="tarjeta" aria-labelledby="titulo-datos">
-        <h2 id="titulo-datos">1. Datos</h2>
-        <p class="ayuda">
-          Importa el CSV depurado descargado de Google Sheets (Archivo → Descargar → Valores separados por comas).
-        </p>
-        <div class="carga" id="zona-carga">
-          <label class="boton boton--principal" for="archivo">
-            Elegir archivo CSV
-            <input id="archivo" class="oculto-visual" type="file" accept=".csv,text/csv" />
-          </label>
-          <button type="button" class="boton" id="cargar-ejemplo">Usar datos del estudio</button>
-          <span class="carga__arrastrar" aria-hidden="true">o arrastra el archivo aquí</span>
+    <main id="contenido" class="contenedor espacio">
+      <!-- Panel lateral en computadora: datos y filtros quedan a la vista mientras el gráfico ocupa el resto. -->
+      <div class="panel">
+      <!-- Toda la tarjeta acepta soltar un CSV; antes de cargar, el recuadro de arrastre lo indica. -->
+      <section class="tarjeta tarjeta--datos" id="zona-carga" aria-labelledby="titulo-datos">
+        <h2 id="titulo-datos">Carga los datos</h2>
+        <div class="carga">
+          <!-- La opción principal: casi siempre se usan los datos de la encuesta del proyecto. -->
+          <button type="button" class="carga__estudio" id="cargar-ejemplo">
+            <span class="carga__estudio-icono" aria-hidden="true">
+              <svg class="icono icono--datos" viewBox="0 0 24 24"><path d="M4 20V10m6 10V4m6 16v-7m4 7H3" /></svg>
+            </span>
+            <span class="carga__estudio-texto">
+              <strong>Usar datos del estudio</strong>
+              <small>Encuesta del proyecto ITI-624 · EcoCampus y Lourdes</small>
+            </span>
+            <svg class="carga__estudio-flecha" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m0 0-5-5m5 5-5 5" /></svg>
+          </button>
+
+          <p class="carga__separador" aria-hidden="true"><span>o usa tu propio archivo</span></p>
+
+          <div class="carga__propio">
+            <label class="carga__opcion carga__elegir" for="archivo">
+              <svg class="icono icono--subir" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4m0 0L7.5 8.5M12 4l4.5 4.5M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" /></svg>
+              <span>Elegir archivo CSV</span>
+              <input id="archivo" class="oculto-visual" type="file" accept=".csv,text/csv" />
+            </label>
+            <label class="carga__opcion carga__arrastrar" for="archivo" aria-hidden="true">
+              <svg class="icono" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" /><path d="M14 3v5h5M12 18v-6m0 0-2.5 2.5M12 12l2.5 2.5" /></svg>
+              <span>Arrastra aquí tu CSV</span>
+            </label>
+          </div>
         </div>
         <p class="estado-archivo" id="estado-archivo" role="status" aria-live="polite"></p>
         <div id="avisos" class="avisos" aria-live="polite"></div>
       </section>
 
       <section class="tarjeta" id="seccion-controles" aria-labelledby="titulo-controles" hidden>
-        <h2 id="titulo-controles">2. Pregunta y filtros</h2>
+        <h2 id="titulo-controles">Pregunta y filtros</h2>
         <div class="controles">
+          <!-- El <button> con <selectedcontent> permite personalizar la lista donde el navegador lo admite; los demás lo ignoran. -->
           <div class="campo campo--ancho">
             <label for="pregunta">Pregunta</label>
-            <select id="pregunta"></select>
-            <p class="ayuda" id="tipo-pregunta"></p>
+            <select id="pregunta"><button type="button" class="select__boton"><selectedcontent></selectedcontent></button></select>
+            <p class="etiquetas" id="tipo-pregunta"></p>
           </div>
           <div class="campo" id="campo-grafico">
             <label for="tipo-grafico">Tipo de gráfico</label>
-            <select id="tipo-grafico" aria-describedby="ayuda-grafico"></select>
+            <select id="tipo-grafico" aria-describedby="ayuda-grafico"><button type="button" class="select__boton"><selectedcontent></selectedcontent></button></select>
             <div class="ayuda" id="ayuda-grafico"></div>
           </div>
           <div class="campo" id="campo-recinto">
             <label for="recinto">Recinto</label>
-            <select id="recinto"></select>
+            <select id="recinto"><button type="button" class="select__boton"><selectedcontent></selectedcontent></button></select>
           </div>
-          <div class="campo" id="campo-comparar">
-            <span class="campo__etiqueta" id="etiqueta-comparar">Comparación</span>
-            <label class="interruptor">
-              <input type="checkbox" id="comparar" aria-describedby="ayuda-comparar" />
-              <span>Comparar recintos</span>
-            </label>
-            <p class="ayuda" id="ayuda-comparar">Muestra ambos recintos lado a lado, en porcentaje.</p>
-          </div>
-          <fieldset class="campo" id="campo-modo">
-            <legend>Mostrar</legend>
-            <div class="segmentado">
-              <label><input type="radio" name="modo" value="cantidad" checked /> <span>Cantidad</span></label>
-              <label><input type="radio" name="modo" value="porcentaje" /> <span>Porcentaje</span></label>
-            </div>
-          </fieldset>
         </div>
-        <p class="ayuda" id="preguntas-omitidas"></p>
       </section>
+      </div>
 
+      <div class="escenario">
       <section class="tarjeta tarjeta--grafico" id="seccion-grafico" aria-labelledby="titulo-grafico" hidden>
-        <div class="tarjeta__cabecera">
-          <h2 id="titulo-grafico">3. Gráfico</h2>
-          <div class="acciones-grafico">
-            <button type="button" class="boton" id="descargar" aria-describedby="ayuda-descarga">Descargar PNG</button>
-            <p class="ayuda" id="ayuda-descarga">Con fondo blanco, lista para el informe.</p>
-          </div>
+        <h2 id="titulo-grafico" class="oculto-visual">Gráfico</h2>
+        <!-- Lo que cambia cómo se ve el gráfico va junto a él; la pregunta y el recinto, en el panel. -->
+        <div class="barra-grafico">
+          <fieldset class="segmentado" id="campo-modo">
+            <legend class="oculto-visual">Mostrar</legend>
+            <label><input type="radio" name="modo" value="cantidad" checked /> <span>Cantidad</span></label>
+            <label><input type="radio" name="modo" value="porcentaje" /> <span>Porcentaje</span></label>
+          </fieldset>
+          <label class="interruptor" id="campo-comparar">
+            <input type="checkbox" role="switch" id="comparar" />
+            <span>Comparar recintos</span>
+          </label>
+          <button type="button" class="boton barra-grafico__descargar" id="descargar" aria-label="Descargar PNG" title="Imagen con fondo blanco y pie de figura, lista para el informe">
+            <svg class="icono icono--bajar" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" /></svg>
+            <svg class="icono icono--hecho" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
+            <span><span class="solo-ancho">Descargar&nbsp;</span>PNG</span>
+          </button>
         </div>
         <figure class="figura">
           <div class="lienzo" id="contenedor-lienzo">
             <canvas id="lienzo" role="img"></canvas>
           </div>
-          <figcaption class="pie-figura">
-            <p class="pie-figura__fuente" id="pie-fuente"></p>
-            <p class="pie-figura__nota" id="pie-nota"></p>
-          </figcaption>
         </figure>
       </section>
 
-      <section class="tarjeta" id="seccion-lectura" aria-labelledby="titulo-lectura" hidden>
+      <section class="tarjeta tarjeta--lectura" id="seccion-lectura" aria-labelledby="titulo-lectura" hidden>
         <div id="bloque-medidas">
           <h2 id="titulo-medidas">Medidas de posición y variabilidad</h2>
           <dl class="medidas" id="medidas" aria-labelledby="titulo-medidas"></dl>
         </div>
-        <h2 id="titulo-lectura">Cómo leer este gráfico</h2>
-        <ul class="lectura" id="lectura"></ul>
+        <div class="bloque-lectura">
+          <h2 id="titulo-lectura">Cómo leer este gráfico</h2>
+          <ul class="lectura" id="lectura"></ul>
+        </div>
         <details class="tabla-detalle">
           <summary id="resumen-tabla">Ver tabla de frecuencias</summary>
           <div class="tabla-desplazable" id="tabla"></div>
         </details>
       </section>
+      </div>
     </main>
 
     <footer class="pie">
       <div class="contenedor">
         <p>
-          Los datos se procesan únicamente en este navegador: el archivo no se envía a ningún servidor.
-          Carga solo datos sin identificadores personales.
+          El archivo se procesa solo en este navegador y no se envía a ningún servidor. ·
+          ITI-624 Probabilidad y Estadística para la Computación I · III cuatrimestre 2026
         </p>
-        <p>ITI-624 Probabilidad y Estadística para la Computación I · III cuatrimestre 2026</p>
       </div>
     </footer>
 
+    <script src="js/inicio.js?v=20261123"></script>
     <script src="vendor/chart-4.4.7.umd.js"></script>
-    <script src="js/csv.js?v=20261029a"></script>
-    <script src="js/tipos.js?v=20261029a"></script>
-    <script src="js/distribucion.js?v=20261029a"></script>
-    <script src="js/estadisticas.js?v=20261029a"></script>
-    <script src="js/tema.js?v=20261029a"></script>
-    <script src="js/lectura.js?v=20261029a"></script>
-    <script src="js/grafico.js?v=20261029a"></script>
-    <script src="js/graficos/lineas.js?v=20261029a"></script>
-    <script src="js/descarga.js?v=20261029a"></script>
-    <script src="js/privacidad.js?v=20261029a"></script>
-    <script src="js/app.js?v=20261029a"></script>
+    <script src="js/csv.js?v=20261123"></script>
+    <script src="js/tipos.js?v=20261123"></script>
+    <script src="js/distribucion.js?v=20261123"></script>
+    <script src="js/estadisticas.js?v=20261123"></script>
+    <script src="js/tema.js?v=20261123"></script>
+    <script src="js/lectura.js?v=20261123"></script>
+    <script src="js/grafico.js?v=20261123"></script>
+    <script src="js/graficos/lineas.js?v=20261123"></script>
+    <script src="js/descarga.js?v=20261123"></script>
+    <script src="js/privacidad.js?v=20261123"></script>
+    <script src="js/app.js?v=20261123"></script>
   </body>
 </html>

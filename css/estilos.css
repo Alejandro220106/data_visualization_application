@@ -1,4 +1,7 @@
-/* Estilos de la herramienta graficadora: tema oscuro, diseño móvil primero, adaptable a computadora. */
+/*
+ * Estilos de la herramienta graficadora: tema oscuro, diseño móvil primero, adaptable a computadora.
+ * En computadora, los datos y filtros van en un panel lateral fijo y el gráfico ocupa el escenario principal.
+ */
 
 :root {
   color-scheme: dark;
@@ -13,13 +16,26 @@
   --color-principal-hover: #1d4ed8;
   --color-acento: #60a5fa;
   --color-foco: #fbbf24;
+  /*
+   * Acentos cálidos: el azul predomina y el naranja es su complementario en el círculo cromático;
+   * el ámbar (complementario dividido) acompaña al naranja. Se usan poco, para señalar lo importante.
+   */
+  --color-complementario: #c8763e;
+  --color-complementario-fuerte: #ea580c;
+  --color-complementario-suave: #fed7aa;
+  --color-calido: #fbbf24;
   --color-aviso-fondo: rgb(251 191 36 / 0.12);
   --color-aviso-borde: #fbbf24;
   --color-error-fondo: rgb(248 113 113 / 0.14);
   --color-error-borde: #f87171;
-  --radio: 12px;
+  --radio: 14px;
+  --radio-control: 10px;
   --sombra: 0 1px 2px rgb(0 0 0 / 0.5), 0 0 0 1px rgb(255 255 255 / 0.05);
+  --sombra-elevada: 0 0 0 1px rgb(255 255 255 / 0.06), 0 24px 48px -24px rgb(0 0 0 / 0.7);
   --espacio: 16px;
+  --relleno-tarjeta: 16px;
+  --hueco: 16px;
+  --curva: cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
 *,
@@ -28,13 +44,26 @@
   box-sizing: border-box;
 }
 
+/* Algunos contenedores usan display: flex; el atributo hidden debe ocultarlos igual. */
+[hidden] {
+  display: none !important;
+}
+
+html {
+  font-size: 100%;
+}
+
 body {
   margin: 0;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  font-size: 16px;
+  font-size: 1rem;
   line-height: 1.5;
   color: var(--color-texto);
-  background: var(--color-fondo);
+  background:
+    radial-gradient(1100px 620px at 0% 0%, rgb(37 99 235 / 0.13), transparent 65%),
+    radial-gradient(900px 520px at 100% 100%, rgb(200 118 62 / 0.07), transparent 65%),
+    var(--color-fondo);
+  background-attachment: fixed;
 }
 
 h1,
@@ -45,7 +74,7 @@ h3 {
 }
 
 h1 {
-  font-size: 1.5rem;
+  font-size: 1.375rem;
 }
 
 h2 {
@@ -56,9 +85,10 @@ h3 {
   font-size: 1rem;
 }
 
+/* La página aprovecha casi todo el ancho; el tope solo evita líneas eternas en monitores enormes. */
 .contenedor {
   width: 100%;
-  max-width: 1100px;
+  max-width: 2400px;
   margin: 0 auto;
   padding: 0 var(--espacio);
 }
@@ -91,19 +121,57 @@ h3 {
   outline-offset: 2px;
 }
 
+/* Movimiento: las tarjetas entran suavemente al mostrarse */
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes resaltar-carga {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(200 118 62 / 0);
+  }
+
+  50% {
+    box-shadow: 0 0 0 6px rgb(200 118 62 / 0.2);
+  }
+}
+
 /* Encabezado y pie */
 
 .encabezado {
   background: linear-gradient(135deg, #1e3a8a 0%, var(--color-superficie) 85%);
   border-bottom: 1px solid var(--color-borde);
   color: #ffffff;
-  padding: 20px 0;
-  margin-bottom: var(--espacio);
+  padding: 14px 0;
+  margin-bottom: var(--hueco);
+}
+
+.encabezado .contenedor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 16px;
+  row-gap: 2px;
+}
+
+.encabezado h1 {
+  margin: 0;
 }
 
 .encabezado__subtitulo {
   margin: 0;
   color: #cbd5e1;
+  font-size: 0.9375rem;
 }
 
 .pie {
@@ -116,49 +184,137 @@ h3 {
   margin: 4px 0;
 }
 
+/* Distribución general: sin datos, solo la tarjeta de carga, centrada y amplia */
+
+.espacio {
+  display: block;
+}
+
+/* Sin datos, la tarjeta queda centrada en el alto de la ventana y el pie abajo. */
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+main {
+  flex: 1 0 auto;
+}
+
+body:not(.con-datos) .espacio {
+  display: grid;
+  align-content: center;
+  padding-bottom: clamp(16px, 6vh, 64px);
+}
+
+body:not(.con-datos) .panel {
+  width: 100%;
+  max-width: 940px;
+  margin: 0 auto;
+}
+
+body:not(.con-datos) .tarjeta--datos {
+  --relleno-tarjeta: clamp(22px, 4.5vw, 52px);
+  box-shadow: var(--sombra-elevada);
+}
+
+body:not(.con-datos) .tarjeta--datos h2 {
+  margin-bottom: clamp(16px, 3vh, 28px);
+  font-size: clamp(1.5rem, 3.5vw, 2rem);
+  justify-content: center;
+}
+
 /* Tarjetas */
 
 .tarjeta {
   background: var(--color-superficie);
   border-radius: var(--radio);
   box-shadow: var(--sombra);
-  padding: var(--espacio);
-  margin-bottom: var(--espacio);
+  padding: var(--relleno-tarjeta);
+  margin-bottom: var(--hueco);
+  animation: aparecer 420ms var(--curva) both;
+}
+
+.panel .tarjeta + .tarjeta,
+.escenario .tarjeta + .tarjeta {
+  animation-delay: 70ms;
 }
 
 .tarjeta__cabecera {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 8px 16px;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .tarjeta__cabecera h2 {
   margin: 0;
 }
 
-.acciones-grafico {
+/* Los títulos de sección son discretos (el protagonista es el gráfico), con una marca naranja. */
+.tarjeta h2 {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-secundario);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
-.acciones-grafico .ayuda {
-  margin: 0;
-  text-align: right;
+.tarjeta h2::before {
+  content: "";
+  flex: none;
+  width: 4px;
+  height: 1em;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--color-calido), var(--color-complementario));
 }
 
+body:not(.con-datos) .panel h2 {
+  color: var(--color-texto);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.tarjeta--grafico {
+  box-shadow: var(--sombra-elevada);
+}
+
+/* Barra sobre el gráfico: cómo se muestra (cantidad o porcentaje, comparación) y la descarga. */
+.barra-grafico {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 20px;
+  margin-bottom: 14px;
+}
+
+.barra-grafico__descargar {
+  margin-left: auto;
+}
+
+/* Teléfono: «Cantidad | Porcentaje» a todo el ancho y, debajo, comparar y descargar en una fila. */
 @media (max-width: 559px) {
-  .acciones-grafico {
-    align-items: flex-start;
+  .barra-grafico {
+    gap: 10px;
+  }
+
+  .barra-grafico .segmentado {
+    display: grid;
     width: 100%;
   }
 
-  .acciones-grafico .ayuda {
-    text-align: left;
+  .barra-grafico__descargar {
+    padding-inline: 14px;
+  }
+
+  .solo-ancho {
+    display: none;
   }
 }
 
@@ -176,10 +332,48 @@ h3 {
   margin: 0 0 4px;
 }
 
-.ayuda-detalle summary {
+.ayuda-detalle summary,
+.tabla-detalle summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  list-style: none;
   cursor: pointer;
   color: var(--color-acento);
-  min-height: 24px;
+  min-height: 32px;
+  border-radius: 6px;
+  transition: color 150ms;
+}
+
+.ayuda-detalle summary::-webkit-details-marker,
+.tabla-detalle summary::-webkit-details-marker {
+  display: none;
+}
+
+.ayuda-detalle summary::before,
+.tabla-detalle summary::before {
+  content: "";
+  flex: none;
+  width: 0.5em;
+  height: 0.5em;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  rotate: -45deg;
+  transition: rotate 260ms var(--curva);
+}
+
+details[open] > summary::before {
+  rotate: 45deg;
+}
+
+.ayuda-detalle summary:hover,
+.tabla-detalle summary:hover {
+  color: var(--color-texto);
+}
+
+.ayuda-detalle[open] > :not(summary) {
+  animation: aparecer 260ms var(--curva) both;
 }
 
 .ayuda-detalle ul {
@@ -187,46 +381,107 @@ h3 {
   padding-left: 18px;
 }
 
-.etiqueta-serie {
-  display: inline-block;
-  margin-left: 4px;
-  padding: 1px 8px;
-  border-radius: 999px;
-  background: rgb(96 165 250 / 0.16);
-  color: #bfdbfe;
-  font-size: 0.75rem;
-  font-weight: 600;
+/* Tipo de pregunta y serie estadística como etiquetas, sin frases */
+.etiquetas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 2px 0 0;
 }
 
-/* Botones */
+.etiquetas:empty {
+  display: none;
+}
+
+.etiqueta {
+  padding: 2px 10px;
+  border: 1px solid var(--color-borde);
+  border-radius: 999px;
+  color: var(--color-texto);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: help;
+}
+
+.etiqueta--serie {
+  border-color: transparent;
+  background: rgb(200 118 62 / 0.16);
+  color: var(--color-complementario-suave);
+  cursor: default;
+}
+
+/* Botones: brillo al pasar, se hunden al pulsar y una onda sale desde el punto tocado */
 
 .boton {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   min-height: 44px;
-  padding: 8px 16px;
+  padding: 8px 18px;
   border: 1px solid var(--color-borde);
-  border-radius: 8px;
-  background: var(--color-superficie-2);
+  border-radius: var(--radio-control);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.04), transparent), var(--color-superficie-2);
   color: var(--color-texto);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 180ms var(--curva),
+    background-color 180ms,
+    border-color 180ms,
+    box-shadow 220ms var(--curva);
+}
+
+/* Destello que cruza el botón al pasar el puntero */
+.boton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.14) 50%, transparent 70%);
+  translate: -110% 0;
+  transition: translate 0s;
+  pointer-events: none;
 }
 
 .boton:hover {
   border-color: var(--color-acento);
+  transform: translateY(-2px);
+  box-shadow:
+    0 10px 22px -12px rgb(0 0 0 / 0.9),
+    0 0 0 3px rgb(96 165 250 / 0.12);
+}
+
+.boton:hover::after {
+  translate: 110% 0;
+  transition: translate 650ms var(--curva);
+}
+
+.boton:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: 0 2px 6px -2px rgb(0 0 0 / 0.8);
+  transition-duration: 80ms;
 }
 
 .boton--principal {
-  background: var(--color-principal);
-  border-color: var(--color-principal);
+  border-color: transparent;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--color-principal), var(--color-acento) 35%), var(--color-principal));
   color: #ffffff;
+  box-shadow: 0 6px 16px -8px rgb(37 99 235 / 0.8);
 }
 
 .boton--principal:hover {
-  background: var(--color-principal-hover);
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--color-principal), var(--color-principal-hover));
+  box-shadow:
+    0 12px 26px -10px rgb(37 99 235 / 0.9),
+    0 0 0 3px rgb(96 165 250 / 0.22);
 }
 
 .boton:has(input:focus-visible) {
@@ -237,29 +492,411 @@ h3 {
 .boton:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
-/* Carga del archivo */
+.boton:disabled::after {
+  display: none;
+}
+
+/* Onda al pulsar: la crea js/app.js en el punto donde se tocó */
+.boton__onda {
+  position: absolute;
+  z-index: -1;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.35);
+  pointer-events: none;
+  animation: onda 600ms ease-out forwards;
+}
+
+@keyframes onda {
+  from {
+    opacity: 1;
+    transform: scale(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(28);
+  }
+}
+
+/* Íconos de los botones: cada uno se mueve en la dirección de su acción */
+.icono {
+  flex: none;
+  width: 1.15em;
+  height: 1.15em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 260ms var(--curva);
+}
+
+.boton:hover .icono--subir {
+  transform: translateY(-2px);
+}
+
+.boton:hover .icono--bajar {
+  transform: translateY(2px);
+}
+
+.boton:hover .icono--datos {
+  transform: rotate(-8deg) scale(1.08);
+}
+
+/* «Descargar PNG» confirma con una palomita cuando termina */
+.icono--hecho {
+  display: none;
+}
+
+.boton--hecho {
+  border-color: var(--color-complementario);
+  color: var(--color-complementario-suave);
+}
+
+.boton--hecho .icono--bajar {
+  display: none;
+}
+
+.boton--hecho .icono--hecho {
+  display: block;
+  stroke-dasharray: 24;
+  animation: trazar 420ms var(--curva) both;
+}
+
+@keyframes trazar {
+  from {
+    stroke-dashoffset: 24;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/*
+ * Carga de datos. Antes de cargar: «Usar datos del estudio» es la opción grande y destacada
+ * (la que casi siempre se usa); debajo, separadas, «Elegir archivo CSV» y el recuadro para
+ * arrastrar. Con datos cargados, la tarjeta se compacta en el panel.
+ */
 
 .carga {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: center;
-  margin-top: 12px;
-  padding: 12px;
-  border: 2px dashed var(--color-borde);
-  border-radius: var(--radio);
+  display: grid;
+  gap: clamp(16px, 2.5vh, 24px);
 }
 
-.carga--arrastrando {
+/* Opción principal: datos del estudio */
+.carga__estudio {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(14px, 2.5vw, 24px);
+  width: 100%;
+  min-height: 112px;
+  padding: 20px clamp(18px, 3vw, 32px);
+  border: 0;
+  border-radius: calc(var(--radio) + 4px);
+  background:
+    radial-gradient(circle at 15% 0%, rgb(255 255 255 / 0.22), transparent 55%),
+    linear-gradient(135deg, color-mix(in srgb, var(--color-principal), var(--color-acento) 40%), var(--color-principal) 60%, var(--color-principal-hover));
+  color: #ffffff;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 14px 34px -14px rgb(37 99 235 / 0.9);
+  animation: brillar 3.2s ease-in-out infinite;
+  transition:
+    transform 220ms var(--curva),
+    box-shadow 220ms var(--curva);
+}
+
+/* Destello que cruza la tarjeta al pasar el puntero */
+.carga__estudio::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.2) 50%, transparent 70%);
+  translate: -110% 0;
+  pointer-events: none;
+}
+
+.carga__estudio:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 22px 44px -16px rgb(37 99 235 / 1),
+    0 0 0 4px rgb(96 165 250 / 0.25);
+  animation-play-state: paused;
+}
+
+.carga__estudio:hover::after {
+  translate: 110% 0;
+  transition: translate 750ms var(--curva);
+}
+
+.carga__estudio:active {
+  transform: translateY(0) scale(0.985);
+  transition-duration: 80ms;
+}
+
+.carga__estudio-icono {
+  display: grid;
+  place-items: center;
+  width: clamp(52px, 8vw, 68px);
+  aspect-ratio: 1;
+  border-radius: var(--radio);
+  background: rgb(255 255 255 / 0.16);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.2);
+}
+
+.carga__estudio-icono .icono {
+  width: 55%;
+  height: 55%;
+}
+
+.carga__estudio:hover .icono--datos {
+  transform: rotate(-8deg) scale(1.1);
+}
+
+.carga__estudio-texto {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.carga__estudio-texto strong {
+  font-size: clamp(1.25rem, 2.6vw, 1.625rem);
+  line-height: 1.2;
+}
+
+.carga__estudio-texto small {
+  color: rgb(255 255 255 / 0.82);
+  font-size: 0.9375rem;
+}
+
+.carga__estudio-flecha {
+  width: 30px;
+  height: 30px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 260ms var(--curva);
+}
+
+.carga__estudio:hover .carga__estudio-flecha {
+  transform: translateX(6px);
+}
+
+@keyframes brillar {
+  0%,
+  100% {
+    box-shadow: 0 14px 34px -14px rgb(37 99 235 / 0.9);
+  }
+
+  50% {
+    box-shadow:
+      0 18px 40px -12px rgb(37 99 235 / 1),
+      0 0 0 6px rgb(96 165 250 / 0.12);
+  }
+}
+
+/* «o usa tu propio archivo», entre dos líneas */
+.carga__separador {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0;
+  color: var(--color-secundario);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.carga__separador::before,
+.carga__separador::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--color-borde);
+}
+
+/* Opciones secundarias: elegir archivo y arrastrar, una al lado de la otra */
+.carga__propio {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: clamp(12px, 2vw, 20px);
+}
+
+.carga__opcion {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 132px;
+  padding: 20px;
+  border-radius: var(--radio);
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 200ms var(--curva),
+    border-color 200ms,
+    background-color 200ms,
+    color 200ms,
+    box-shadow 220ms var(--curva);
+}
+
+.carga__opcion .icono {
+  width: 34px;
+  height: 34px;
+}
+
+.carga__elegir {
+  border: 1px solid var(--color-borde);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.04), transparent), var(--color-superficie-2);
+  color: var(--color-texto);
+}
+
+.carga__elegir:hover {
+  transform: translateY(-2px);
   border-color: var(--color-acento);
-  background: rgb(96 165 250 / 0.1);
+  box-shadow:
+    0 12px 24px -14px rgb(0 0 0 / 0.9),
+    0 0 0 3px rgb(96 165 250 / 0.12);
+}
+
+.carga__elegir:active {
+  transform: scale(0.98);
+}
+
+.carga__elegir:has(input:focus-visible) {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
 }
 
 .carga__arrastrar {
+  border: 2px dashed var(--color-borde);
   color: var(--color-secundario);
-  font-size: 0.875rem;
+}
+
+.carga__arrastrar:hover {
+  border-color: var(--color-complementario);
+  color: var(--color-texto);
+}
+
+.carga__arrastrar .icono {
+  transition: transform 300ms var(--curva);
+}
+
+.carga__arrastrar:hover .icono {
+  transform: translateY(-3px);
+}
+
+/* Mientras se arrastra un archivo sobre la tarjeta */
+.carga--arrastrando .carga__arrastrar {
+  border-color: var(--color-complementario);
+  background: rgb(200 118 62 / 0.1);
+  color: var(--color-texto);
+  transform: scale(1.02);
+  animation: resaltar-carga 1.2s ease-in-out infinite;
+}
+
+.carga--arrastrando .carga__arrastrar .icono {
+  transform: translateY(-4px) scale(1.1);
+}
+
+/* En pantallas táctiles no se arrastran archivos: queda solo «Elegir archivo CSV». */
+@media (hover: none) and (pointer: coarse) {
+  .carga__arrastrar {
+    display: none;
+  }
+
+  .carga__elegir {
+    min-height: 96px;
+  }
+}
+
+@media (max-width: 419px) {
+  .carga__estudio-flecha {
+    display: none;
+  }
+
+  .carga__estudio {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+}
+
+/* Con datos cargados: tarjeta compacta (estudio y elegir como botones; se puede soltar encima) */
+body.con-datos .carga {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
+  margin-top: 4px;
+}
+
+body.con-datos .carga__estudio {
+  min-height: 56px;
+  gap: 12px;
+  padding: 8px 14px;
+  border-radius: var(--radio-control);
+  animation: none;
+}
+
+body.con-datos .carga__estudio-icono {
+  width: 36px;
+  border-radius: 8px;
+}
+
+body.con-datos .carga__estudio-texto strong {
+  font-size: 1rem;
+}
+
+body.con-datos .carga__estudio-texto small,
+body.con-datos .carga__separador,
+body.con-datos .carga__arrastrar {
+  display: none;
+}
+
+body.con-datos .carga__estudio-flecha {
+  width: 20px;
+  height: 20px;
+}
+
+body.con-datos .carga__propio {
+  grid-template-columns: 1fr;
+}
+
+body.con-datos .carga__elegir {
+  flex-direction: row;
+  min-height: 56px;
+  padding: 8px 14px;
+  border-radius: var(--radio-control);
+}
+
+body.con-datos .carga__elegir .icono {
+  width: 20px;
+  height: 20px;
+}
+
+body.con-datos .carga--arrastrando {
+  outline: 2px dashed var(--color-complementario);
+  outline-offset: -6px;
 }
 
 .estado-archivo {
@@ -287,6 +924,7 @@ h3 {
   border-left: 4px solid var(--color-aviso-borde);
   background: var(--color-aviso-fondo);
   border-radius: 6px;
+  animation: aparecer 300ms var(--curva) both;
 }
 
 .aviso--error {
@@ -319,53 +957,395 @@ h3 {
   padding: 0;
 }
 
+/*
+ * Listas desplegables. En todos los navegadores: flecha propia y realce al pasar.
+ * Donde se puede personalizar la lista (Chrome, Edge, Brave y Opera recientes), además se abre
+ * con una animación, con opciones redondeadas y la elegida marcada. En los demás, la lista nativa.
+ */
 select {
+  appearance: none;
   width: 100%;
   min-height: 44px;
-  padding: 8px 12px;
+  padding: 8px 40px 8px 12px;
   border: 1px solid var(--color-borde);
-  border-radius: 8px;
-  background: var(--color-superficie-2);
+  border-radius: var(--radio-control);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center / 18px, linear-gradient(180deg, rgb(255 255 255 / 0.03), transparent), var(--color-superficie-2);
   color: var(--color-texto);
   font: inherit;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+    border-color 180ms,
+    box-shadow 220ms var(--curva),
+    transform 180ms var(--curva);
 }
 
 select:hover {
   border-color: var(--color-acento);
+  box-shadow: 0 0 0 3px rgb(96 165 250 / 0.12);
+}
+
+select:focus-visible {
+  box-shadow: 0 0 0 4px rgb(96 165 250 / 0.18);
 }
 
 select:disabled {
-  background: var(--color-superficie);
+  background-color: var(--color-superficie);
   color: var(--color-secundario);
   border-style: dashed;
+  box-shadow: none;
+  cursor: not-allowed;
 }
 
+option {
+  background: var(--color-superficie-2);
+  color: var(--color-texto);
+}
+
+@supports (appearance: base-select) {
+  select,
+  ::picker(select) {
+    appearance: base-select;
+  }
+
+  select {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-right: 12px;
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.03), transparent), var(--color-superficie-2);
+  }
+
+  /* El texto elegido se corta con «…» y la flecha queda siempre visible. */
+  .select__boton {
+    all: unset;
+    display: flex;
+    flex: 1;
+    min-width: 0;
+  }
+
+  selectedcontent {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  select:disabled {
+    background: var(--color-superficie);
+  }
+
+  select:open {
+    border-color: var(--color-acento);
+    box-shadow: 0 0 0 4px rgb(96 165 250 / 0.18);
+  }
+
+  /* La flecha gira al abrir */
+  select::picker-icon {
+    content: "";
+    flex: none;
+    width: 18px;
+    height: 18px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat center / contain;
+    transition: rotate 260ms var(--curva);
+  }
+
+  select:open::picker-icon {
+    rotate: 180deg;
+  }
+
+  /* La lista: tarjeta flotante que aparece deslizándose */
+  ::picker(select) {
+    box-sizing: border-box;
+    min-width: anchor-size(width);
+    max-width: min(640px, calc(100vw - 24px));
+    max-height: min(65vh, 520px);
+    margin-block: 6px;
+    padding: 8px;
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio);
+    background: var(--color-superficie-2);
+    color: var(--color-texto);
+    box-shadow:
+      0 0 0 1px rgb(255 255 255 / 0.04),
+      0 24px 48px -16px rgb(0 0 0 / 0.85);
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-borde) transparent;
+    opacity: 0;
+    translate: 0 -8px;
+    scale: 0.98;
+    transform-origin: top center;
+    transition:
+      opacity 180ms ease-out,
+      translate 260ms var(--curva),
+      scale 260ms var(--curva),
+      overlay 260ms allow-discrete,
+      display 260ms allow-discrete;
+  }
+
+  select:open::picker(select) {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+  }
+
+  @starting-style {
+    select:open::picker(select) {
+      opacity: 0;
+      translate: 0 -8px;
+      scale: 0.98;
+    }
+  }
+
+  /*
+   * Ojo: no se cambia el «display» de ::picker(select). El navegador lo oculta con display: none
+   * cuando la lista está cerrada; si se fuerza otro valor, la lista queda invisible pero encima de
+   * la página y se roba los clics. La separación entre opciones se hace con margen.
+   */
+  option + option {
+    margin-top: 6px;
+  }
+
+  /* Cada opción es una fila con borde propio, para distinguir dónde termina una y empieza otra */
+  option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 46px;
+    padding: 10px 14px;
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio-control);
+    background: var(--color-superficie);
+    line-height: 1.4;
+    white-space: normal;
+    cursor: pointer;
+    transition:
+      background-color 140ms,
+      border-color 140ms,
+      color 140ms,
+      translate 160ms var(--curva);
+  }
+
+  option:hover,
+  option:focus-visible {
+    border-color: var(--color-acento);
+    background: rgb(96 165 250 / 0.12);
+    translate: 3px 0;
+    outline: none;
+  }
+
+  /* La elegida: fondo azul, borde y palomita naranjas */
+  option:checked {
+    border-color: var(--color-complementario);
+    background: rgb(37 99 235 / 0.3);
+    box-shadow: inset 4px 0 0 var(--color-complementario);
+    font-weight: 600;
+  }
+
+  option::checkmark {
+    order: 1;
+    margin-left: auto;
+    color: var(--color-complementario);
+    font-weight: 700;
+  }
+
+  option:disabled {
+    border-style: dashed;
+    background: transparent;
+    color: var(--color-secundario);
+    opacity: 0.6;
+    translate: none;
+    cursor: not-allowed;
+  }
+
+  option:disabled:hover {
+    border-color: var(--color-borde);
+    background: transparent;
+  }
+
+  /* Preguntas numeradas: un círculo con el número ayuda a ubicarlas y a separarlas */
+  #pregunta {
+    counter-reset: pregunta;
+  }
+
+  #pregunta option {
+    counter-increment: pregunta;
+    align-items: flex-start;
+  }
+
+  #pregunta option::before {
+    content: counter(pregunta);
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgb(37 99 235 / 0.25);
+    color: #bfdbfe;
+    font-size: 0.8125rem;
+    font-weight: 700;
+  }
+
+  #pregunta option:checked::before {
+    background: var(--color-complementario);
+    color: #111827;
+  }
+
+  #pregunta option::checkmark {
+    align-self: center;
+  }
+
+  /* Las preguntas son largas: su lista puede ser más ancha que el campo */
+  #pregunta::picker(select) {
+    max-width: min(760px, calc(100vw - 24px));
+  }
+
+  /* Las opciones entran escalonadas al abrir la lista */
+  select:open option {
+    animation: aparecer-opcion 260ms var(--curva) both;
+  }
+
+  select:open option:nth-of-type(2) { animation-delay: 15ms; }
+  select:open option:nth-of-type(3) { animation-delay: 30ms; }
+  select:open option:nth-of-type(4) { animation-delay: 45ms; }
+  select:open option:nth-of-type(5) { animation-delay: 60ms; }
+  select:open option:nth-of-type(6) { animation-delay: 75ms; }
+  select:open option:nth-of-type(7) { animation-delay: 90ms; }
+  select:open option:nth-of-type(n + 8) { animation-delay: 105ms; }
+}
+
+@keyframes aparecer-opcion {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* «Comparar recintos»: interruptor deslizable (sigue siendo una casilla para el teclado y los lectores) */
 .interruptor {
   display: inline-flex;
-  gap: 10px;
+  gap: 12px;
   align-items: center;
   min-height: 44px;
-  font-weight: 400 !important;
+  font-weight: 600;
   cursor: pointer;
 }
 
-.interruptor input {
-  width: 22px;
-  height: 22px;
-  accent-color: var(--color-acento);
+.interruptor:has(input:disabled) {
+  color: var(--color-secundario);
+  cursor: not-allowed;
 }
 
-.segmentado {
-  display: inline-flex;
+.interruptor input {
+  appearance: none;
+  position: relative;
+  flex: none;
+  width: 46px;
+  height: 26px;
+  margin: 0;
   border: 1px solid var(--color-borde);
-  border-radius: 8px;
-  overflow: hidden;
+  border-radius: 999px;
+  background: var(--color-superficie);
+  cursor: inherit;
+  transition:
+    background-color 220ms,
+    border-color 220ms,
+    box-shadow 220ms;
+}
+
+.interruptor input::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-secundario);
+  box-shadow: 0 2px 4px rgb(0 0 0 / 0.5);
+  transition:
+    translate 280ms cubic-bezier(0.3, 1.5, 0.5, 1),
+    background-color 220ms,
+    width 180ms var(--curva);
+}
+
+.interruptor:hover input:not(:disabled) {
+  border-color: var(--color-acento);
+  box-shadow: 0 0 0 3px rgb(96 165 250 / 0.12);
+}
+
+/* Al presionar, la perilla se estira como un interruptor físico */
+.interruptor:active input:not(:disabled)::before {
+  width: 22px;
+}
+
+.interruptor input:checked {
+  border-color: transparent;
+  background: var(--color-principal);
+}
+
+.interruptor input:checked::before {
+  translate: 20px 0;
+  background: #ffffff;
+}
+
+.interruptor:active input:checked:not(:disabled)::before {
+  translate: 16px 0;
+}
+
+.interruptor input:disabled {
+  opacity: 0.5;
+}
+
+/* «Cantidad | Porcentaje»: la pastilla elegida se desliza de una opción a la otra */
+.segmentado {
+  position: relative;
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
+  margin: 0;
+  padding: 3px;
+  min-width: 0;
+  border: 1px solid var(--color-borde);
+  border-radius: calc(var(--radio-control) + 3px);
   width: fit-content;
-  background: var(--color-superficie-2);
+  background: var(--color-superficie);
+}
+
+.segmentado::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc(50% - 3px);
+  border-radius: var(--radio-control);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--color-principal), var(--color-acento) 35%), var(--color-principal));
+  box-shadow: 0 4px 12px -4px rgb(37 99 235 / 0.8);
+  transition:
+    translate 340ms cubic-bezier(0.3, 1.3, 0.5, 1),
+    opacity 200ms;
+}
+
+.segmentado:has(label:last-of-type input:checked)::before {
+  translate: 100% 0;
+}
+
+.segmentado:has(input:disabled)::before {
+  opacity: 0.55;
 }
 
 .segmentado label {
   position: relative;
+  z-index: 1;
   font-weight: 400 !important;
 }
 
@@ -378,21 +1358,31 @@ select:disabled {
 }
 
 .segmentado span {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  min-height: 42px;
-  padding: 0 16px;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 18px;
+  border-radius: var(--radio-control);
+  color: var(--color-secundario);
+  transition:
+    color 220ms,
+    background-color 200ms;
+}
+
+.segmentado label:hover input:not(:checked, :disabled) + span {
+  color: var(--color-texto);
+  background: rgb(96 165 250 / 0.08);
 }
 
 .segmentado input:checked + span {
-  background: var(--color-principal);
   color: #ffffff;
   font-weight: 600;
 }
 
 .segmentado input:focus-visible + span {
   outline: 3px solid var(--color-foco);
-  outline-offset: -3px;
+  outline-offset: 0;
 }
 
 .segmentado input:disabled + span {
@@ -400,7 +1390,7 @@ select:disabled {
   cursor: not-allowed;
 }
 
-/* Gráfico */
+/* Gráfico: su alto lo calcula js/app.js según la ventana */
 
 .lienzo {
   position: relative;
@@ -408,37 +1398,22 @@ select:disabled {
   height: 420px;
 }
 
-/* Pie de figura: «Fuente» y «Nota», como en un informe */
-
+/* El pie de figura («Fuente» y «Nota») solo va en el PNG descargado (js/descarga.js). */
 .figura {
   margin: 0;
-}
-
-.pie-figura {
-  margin-top: 12px;
-  font-size: 0.8125rem;
-  color: var(--color-secundario);
-}
-
-.pie-figura p {
-  margin: 0;
-}
-
-.pie-figura__fuente {
-  font-style: italic;
-}
-
-.pie-figura__nota {
-  margin-top: 4px !important;
 }
 
 /* Medidas de posición y variabilidad */
 
 .medidas {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
   margin: 0 0 var(--espacio);
+}
+
+.bloque-lectura h2 {
+  margin-bottom: 10px;
 }
 
 .medidas:empty {
@@ -447,10 +1422,53 @@ select:disabled {
 
 .medida {
   margin: 0;
-  padding: 10px 12px;
+  padding: 12px 14px;
   border: 1px solid var(--color-borde);
-  border-radius: 8px;
+  border-radius: var(--radio-control);
   background: var(--color-superficie-2);
+  animation: aparecer 360ms var(--curva) both;
+  transition:
+    transform 150ms var(--curva),
+    border-color 150ms;
+}
+
+.medida:nth-child(2) {
+  animation-delay: 40ms;
+}
+
+.medida:nth-child(3) {
+  animation-delay: 80ms;
+}
+
+.medida:nth-child(4) {
+  animation-delay: 120ms;
+}
+
+.medida:nth-child(5) {
+  animation-delay: 160ms;
+}
+
+.medida:nth-child(n + 6) {
+  animation-delay: 200ms;
+}
+
+.medida:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-acento);
+}
+
+/* La moda va en naranja, igual que la barra más frecuente del gráfico. */
+.medida--moda {
+  border-color: rgb(200 118 62 / 0.45);
+  background: linear-gradient(180deg, rgb(200 118 62 / 0.1), transparent 70%), var(--color-superficie-2);
+}
+
+.medida--moda dd {
+  color: var(--color-complementario-suave);
+}
+
+.medida--moda:hover {
+  border-color: var(--color-complementario);
 }
 
 .medida dt {
@@ -462,14 +1480,16 @@ select:disabled {
 }
 
 .medida dd {
-  margin: 2px 0 0;
+  margin: 4px 0 0;
   font-size: 1.125rem;
   font-weight: 700;
+  line-height: 1.2;
   overflow-wrap: anywhere;
 }
 
 .medida__detalle {
   display: block;
+  margin-top: 2px;
   color: var(--color-secundario);
   font-size: 0.75rem;
   font-weight: 400;
@@ -477,11 +1497,15 @@ select:disabled {
 
 /* Lectura y tablas */
 
+.lectura li::marker {
+  color: var(--color-complementario);
+}
+
 .lectura {
   margin: 0;
   padding-left: 20px;
   display: grid;
-  gap: 6px;
+  gap: 8px;
 }
 
 .tabla-detalle {
@@ -489,12 +1513,12 @@ select:disabled {
 }
 
 .tabla-detalle summary {
-  cursor: pointer;
   font-weight: 600;
   min-height: 44px;
-  display: flex;
-  align-items: center;
-  color: var(--color-acento);
+}
+
+.tabla-detalle[open] .tabla-desplazable {
+  animation: aparecer 300ms var(--curva) both;
 }
 
 .tabla-desplazable {
@@ -520,6 +1544,14 @@ td {
   text-align: left;
 }
 
+tbody tr {
+  transition: background-color 120ms;
+}
+
+tbody tr:hover {
+  background: rgb(255 255 255 / 0.03);
+}
+
 thead th {
   background: var(--color-superficie-2);
   font-size: 0.8125rem;
@@ -536,11 +1568,16 @@ th.numero {
   white-space: nowrap;
 }
 
-/* Computadora */
+/* Tableta y computadora */
 
 @media (min-width: 720px) {
+  :root {
+    --relleno-tarjeta: 22px;
+    --hueco: 20px;
+  }
+
   h1 {
-    font-size: 1.875rem;
+    font-size: 1.625rem;
   }
 
   .controles {
@@ -552,19 +1589,395 @@ th.numero {
   }
 
   .lienzo {
-    height: 460px;
+    height: 520px;
+  }
+
+  .medida dd {
+    font-size: 1.375rem;
+  }
+
+}
+
+/* Computadora: panel lateral fijo con datos y filtros; el gráfico ocupa el resto */
+
+@media (min-width: 1100px) {
+  :root {
+    --espacio: 24px;
+    --hueco: 24px;
+  }
+
+  body.con-datos .espacio {
+    display: grid;
+    /* El panel crece un poco con la pantalla para que los controles no se vean diminutos. */
+    grid-template-columns: clamp(330px, 25vw, 520px) minmax(0, 1fr);
+    gap: var(--hueco);
+    align-items: start;
+  }
+
+  body.con-datos .panel {
+    position: sticky;
+    top: var(--hueco);
+    max-height: calc(100vh - 2 * var(--hueco));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-borde) transparent;
+    /* Margen para que el contorno de foco no se recorte en el borde del panel. */
+    padding: 4px;
+    margin: -4px;
+  }
+
+  body.con-datos .panel .controles {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  body.con-datos .tarjeta--grafico {
+    --relleno-tarjeta: 24px;
+  }
+
+  /* Medidas y lectura lado a lado: la tarjeta queda baja y sin renglones larguísimos. */
+  .tarjeta--lectura {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 calc(var(--relleno-tarjeta) * 1.5);
+    align-items: start;
+  }
+
+  .tarjeta--lectura > .tabla-detalle,
+  #bloque-medidas[hidden] + .bloque-lectura {
+    grid-column: 1 / -1;
+  }
+
+  /* Como mucho tres medidas por fila, para que seis queden en dos filas parejas. */
+  .tarjeta--lectura .medidas {
+    grid-template-columns: repeat(auto-fit, minmax(max(130px, 30%), 1fr));
+    margin-bottom: 0;
   }
 }
 
-@media (min-width: 1000px) {
-  .controles {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+/* Pantallas grandes: todo crece en proporción (textos, controles y márgenes van en rem). */
+@media (min-width: 1280px) {
+  html {
+    font-size: 106.25%;
+  }
+}
+
+@media (min-width: 1600px) {
+  :root {
+    --espacio: 32px;
+    --hueco: 28px;
+  }
+
+  html {
+    font-size: 112.5%;
+  }
+
+  body.con-datos .tarjeta--grafico,
+  .tarjeta--lectura {
+    --relleno-tarjeta: 28px;
+  }
+}
+
+@media (min-width: 2200px) {
+  html {
+    font-size: 125%;
+  }
+}
+
+/*
+ * Pantalla de inicio: una cortina de garaje. Sin profundidad 3D: la lona baja un poco al
+ * destrabarse y luego sube de un tirón suave hasta perderse en la caja superior.
+ */
+
+body.con-cortina {
+  overflow: hidden;
+}
+
+.cortina {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  overflow: hidden;
+  overscroll-behavior: contain;
+  touch-action: none;
+}
+
+.cortina[hidden] {
+  display: none;
+}
+
+.cortina__lona {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-rows: 1fr auto auto;
+  justify-items: center;
+  /* Láminas horizontales: brillo arriba, sombra abajo, sobre el degradado del encabezado. */
+  background:
+    repeating-linear-gradient(
+      180deg,
+      rgb(255 255 255 / 0.07) 0 1px,
+      rgb(255 255 255 / 0.015) 1px 14px,
+      transparent 14px 33px,
+      rgb(0 0 0 / 0.35) 33px 35px,
+      rgb(0 0 0 / 0.55) 35px 36px
+    ),
+    radial-gradient(ellipse at 50% 40%, rgb(96 165 250 / 0.14), transparent 60%),
+    linear-gradient(180deg, #1e3a8a 0%, var(--color-superficie) 75%, var(--color-fondo) 100%);
+  box-shadow: 0 30px 60px -10px rgb(0 0 0 / 0.75);
+  transition: translate 450ms var(--curva);
+  will-change: transform;
+}
+
+/* Resplandor de fogata en la parte baja, que crepita suavemente */
+.cortina__lona::before {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 55%;
+  background:
+    radial-gradient(ellipse 90% 60% at 50% 100%, rgb(200 118 62 / 0.18), transparent 70%),
+    radial-gradient(ellipse 50% 35% at 50% 100%, rgb(251 191 36 / 0.06), transparent 70%);
+  pointer-events: none;
+  animation: crepitar 2.8s ease-in-out infinite;
+}
+
+@keyframes crepitar {
+  0%,
+  100% {
+    opacity: 0.75;
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  55% {
+    opacity: 0.85;
+  }
+
+  70% {
+    opacity: 0.95;
+  }
+}
+
+.cortina__chispas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* El texto, la flecha y el borde van por encima de las chispas */
+.cortina__texto,
+.cortina__abrir,
+.cortina__zocalo {
+  position: relative;
+  z-index: 1;
+}
+
+/* Al pasar por la flecha, la cortina se asoma un poco, invitando a abrirla. */
+.cortina:has(.cortina__abrir:hover) .cortina__lona {
+  translate: 0 -14px;
+}
+
+.cortina__texto {
+  align-self: center;
+  display: grid;
+  justify-items: center;
+  gap: clamp(8px, 2vh, 20px);
+  padding: 0 var(--espacio);
+  text-align: center;
+}
+
+.cortina__titulo {
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(2.5rem, 8vw, 6.5rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  text-shadow: 0 4px 24px rgb(0 0 0 / 0.55);
+  animation: aparecer 800ms var(--curva) 150ms both;
+}
+
+.cortina__lema {
+  margin: 0;
+  color: var(--color-foco);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.25rem, 3.2vw, 2.25rem);
+  font-style: italic;
+  letter-spacing: 0.02em;
+  text-shadow: 0 2px 12px rgb(0 0 0 / 0.6);
+  animation: aparecer 800ms var(--curva) 450ms both;
+}
+
+/*
+ * Flecha para abrir: dos puntas finas, una encima de la otra, sin círculo ni texto.
+ * Se encienden de abajo hacia arriba, en la dirección en que sube la cortina, y todo
+ * el botón flota suavemente.
+ */
+.cortina__abrir {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  margin-bottom: clamp(16px, 4vh, 40px);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: rgb(255 255 255 / 0.85);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  animation: aparecer 700ms var(--curva) 750ms both;
+  transition: color 250ms;
+}
+
+.cortina__abrir svg {
+  width: 52px;
+  height: 52px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 2px 6px rgb(0 0 0 / 0.5));
+  animation: flotar 2.4s ease-in-out 1.4s infinite;
+}
+
+.cortina__punta {
+  animation: encender-punta 2.4s ease-in-out 1.4s infinite both;
+}
+
+/* La de abajo se enciende primero y luego la de arriba: parece que suben. */
+.cortina__punta--arriba {
+  animation-delay: 1.7s;
+}
+
+.cortina__abrir:hover {
+  color: var(--color-calido);
+}
+
+.cortina__abrir:hover svg {
+  filter: drop-shadow(0 0 10px rgb(200 118 62 / 0.6));
+}
+
+@keyframes flotar {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes encender-punta {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+
+  35% {
+    opacity: 1;
+  }
+
+  70% {
+    opacity: 0.4;
+  }
+}
+
+/* Borde inferior de la cortina con su manija */
+.cortina__zocalo {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 22px;
+  background: linear-gradient(180deg, #334155, #111827);
+  border-top: 1px solid rgb(255 255 255 / 0.12);
+}
+
+.cortina__manija {
+  width: 72px;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #94a3b8, #475569);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.6);
+}
+
+/* Caja superior donde se enrolla la cortina */
+.cortina__caja {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 1;
+  height: 18px;
+  background: linear-gradient(180deg, #111827, #1f2937);
+  border-bottom: 1px solid rgb(255 255 255 / 0.1);
+  box-shadow: 0 6px 12px -4px rgb(0 0 0 / 0.8);
+}
+
+/* Apertura: se destraba (baja un poco), sube entera y la caja se desvanece al final */
+.cortina--abriendo {
+  pointer-events: none;
+}
+
+.cortina--abriendo .cortina__lona {
+  translate: none;
+  animation: alzar-cortina 1600ms both;
+}
+
+.cortina--abriendo .cortina__abrir,
+.cortina--abriendo .cortina__abrir svg,
+.cortina--abriendo .cortina__punta {
+  animation: none;
+}
+
+.cortina--abriendo .cortina__caja {
+  animation: desvanecer 350ms ease-out 1500ms both;
+}
+
+@keyframes alzar-cortina {
+  0% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0.3, 0, 0.6, 1);
+  }
+
+  9% {
+    transform: translateY(12px);
+    animation-timing-function: cubic-bezier(0.6, 0, 0.25, 1);
+  }
+
+  100% {
+    transform: translateY(-100%);
+  }
+}
+
+@keyframes desvanecer {
+  to {
+    opacity: 0;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  * {
+  *,
+  *::before,
+  *::after {
     scroll-behavior: auto !important;
     transition: none !important;
+    animation: none !important;
+  }
+
+  ::picker(select) {
+    transition: none !important;
+  }
+
+  /* La cortina no se alza: solo se desvanece. */
+  .cortina--abriendo {
+    opacity: 0;
+    transition: opacity 250ms !important;
   }
 }
