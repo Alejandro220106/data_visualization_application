@@ -29,13 +29,9 @@
     recinto: document.getElementById("recinto"),
     campoComparar: document.getElementById("campo-comparar"),
     comparar: document.getElementById("comparar"),
-    ayudaComparar: document.getElementById("ayuda-comparar"),
     modos: document.querySelectorAll('input[name="modo"]'),
-    preguntasOmitidas: document.getElementById("preguntas-omitidas"),
     contenedorLienzo: document.getElementById("contenedor-lienzo"),
     lienzo: document.getElementById("lienzo"),
-    pieFuente: document.getElementById("pie-fuente"),
-    pieNota: document.getElementById("pie-nota"),
     descargar: document.getElementById("descargar"),
     lectura: document.getElementById("lectura"),
     tabla: document.getElementById("tabla"),
@@ -47,6 +43,15 @@
   // La imagen descargada se dibuja aparte, con ancho fijo y el doble de densidad, en el tema claro.
   const ANCHO_EXPORTACION = 1000;
   const DENSIDAD_EXPORTACION = 2;
+  // En pantalla, el gráfico es el protagonista: en computadora su tarjeta llena el alto de la
+  // ventana y su texto crece con el ancho.
+  const ANCHO_COMPUTADORA = 720;
+  const ALTURA_MAXIMA = 1200;
+  const MARGEN_INFERIOR = 24;
+  // Si la tarjeta empieza más abajo (en tableta va después de los filtros), se ajusta a la ventana sola.
+  const INICIO_MAXIMO_TARJETA = 120;
+  const ANCHO_TEXTO_NORMAL = 780;
+  const ESCALA_TEXTO_MAXIMA = 1.45;
 
   const estado = {
     datos: null,
@@ -65,6 +70,7 @@
   };
   let grafico = null;
   let anchoAnterior = window.innerWidth;
+  let altoAnterior = window.innerHeight;
 
   Chart.defaults.font.family = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
 
@@ -73,6 +79,12 @@
     if (texto !== undefined) nodo.textContent = texto;
     if (clase) nodo.className = clase;
     return nodo;
+  }
+
+  /** Cambia las opciones de una lista sin quitar el botón que la hace personalizable (ver index.html). */
+  function ponerOpciones(lista, ...opciones) {
+    for (const opcion of lista.querySelectorAll("option")) opcion.remove();
+    lista.append(...opciones);
   }
 
   function mostrarAvisos(mensajes, esError = false) {
@@ -91,6 +103,7 @@
     grafico = null;
     el.estadoArchivo.textContent = "";
     for (const seccion of [el.seccionControles, el.seccionGrafico, el.seccionLectura]) seccion.hidden = true;
+    document.body.classList.remove("con-datos");
   }
 
   function manejarError(error) {
@@ -155,7 +168,12 @@
       columna,
       descripcion: E.describirPregunta(filas.map((fila) => fila[columna])),
     }));
-    const graficables = preguntas.filter((p) => p.descripcion.tipo !== TIPOS.TEXTO_LIBRE);
+    // No se ofrecen las respuestas abiertas ni las preguntas en que todas las personas respondieron
+    // lo mismo (por ejemplo, la de consentimiento y requisitos): su gráfico sería una sola barra.
+    const respuestasDistintas = (columna) => new Set(filas.map((f) => f[columna]).filter(Boolean)).size;
+    const graficables = preguntas.filter(
+      (p) => p.descripcion.tipo !== TIPOS.TEXTO_LIBRE && respuestasDistintas(p.columna) > 1,
+    );
     if (graficables.length === 0) {
       throw new ErrorCSV("El archivo no tiene preguntas que se puedan graficar.");
     }
@@ -171,12 +189,10 @@
     estado.fuente = ejemplo
       ? `Fuente: elaboración propia con datos de la encuesta del proyecto ITI-624, UTN San Carlos (${anio}).`
       : `Fuente: elaboración propia con datos de la encuesta del proyecto (archivo «${nombre}», ${anio}).`;
-    // Se empieza por la primera pregunta del formulario con más de una respuesta distinta
-    // (la marca temporal queda disponible como serie cronológica, pero no es la primera).
-    const variada = graficables.find(
-      (p) => p.descripcion.tipo !== TIPOS.CRONOLOGICA && new Set(filas.map((f) => f[p.columna]).filter(Boolean)).size > 1,
-    );
-    estado.pregunta = (variada ?? graficables[0]).columna;
+    // Se empieza por la primera pregunta del formulario (la marca temporal queda disponible
+    // como serie cronológica, pero no es la primera).
+    const primera = graficables.find((p) => p.descripcion.tipo !== TIPOS.CRONOLOGICA);
+    estado.pregunta = (primera ?? graficables[0]).columna;
 
     const mensajes = [...avisos];
     const identificadores = G.privacidad.columnasIdentificadoras(columnas);
@@ -191,18 +207,13 @@
     mostrarAvisos(mensajes);
 
     el.estadoArchivo.textContent = `${nombre}: ${filas.length} ${filas.length === 1 ? "respuesta" : "respuestas"} y ${columnas.length} columnas.`;
-    const omitidas = preguntas.filter((p) => p.descripcion.tipo === TIPOS.TEXTO_LIBRE).map((p) => `«${p.columna}»`);
-    el.preguntasOmitidas.textContent = omitidas.length
-      ? omitidas.length === 1
-        ? `No se grafica 1 columna de respuesta abierta o sin respuestas repetidas: ${omitidas[0]}.`
-        : `No se grafican ${omitidas.length} columnas de respuesta abierta o sin respuestas repetidas: ${omitidas.join(", ")}.`
-      : "";
     prepararControles();
     render();
   }
 
   function prepararControles() {
-    el.pregunta.replaceChildren(
+    ponerOpciones(
+      el.pregunta,
       ...estado.preguntas.map(({ columna }) => {
         const opcion = crear("option", columna);
         opcion.value = columna;
@@ -216,7 +227,8 @@
     el.campoComparar.hidden = !hayRecinto || estado.grupos.length < 2;
     const todos = crear("option", "Todos los recintos");
     todos.value = "";
-    el.recinto.replaceChildren(
+    ponerOpciones(
+      el.recinto,
       todos,
       ...estado.grupos.map((grupo) => {
         const opcion = crear("option", grupo);
@@ -228,7 +240,27 @@
     el.comparar.checked = false;
     for (const radio of el.modos) radio.checked = radio.value === estado.modo;
 
+    // La clase cambia la distribución (panel lateral en computadora) antes de medir el lienzo.
+    document.body.classList.add("con-datos");
     for (const seccion of [el.seccionControles, el.seccionGrafico, el.seccionLectura]) seccion.hidden = false;
+  }
+
+  /** Factor para agrandar el texto del gráfico en pantallas anchas (1 en teléfono y tableta). */
+  function escalaTexto(ancho) {
+    return Math.min(ESCALA_TEXTO_MAXIMA, Math.max(1, ancho / ANCHO_TEXTO_NORMAL));
+  }
+
+  /**
+   * Alto del gráfico en pantalla: el sugerido en teléfono; en computadora, el que hace que la
+   * tarjeta completa (barra de controles y lienzo) quepa en la ventana.
+   */
+  function alturaEnPantalla(sugerida) {
+    if (window.innerWidth < ANCHO_COMPUTADORA) return sugerida;
+    // La barra de controles no depende del alto del lienzo, así que se mide aparte.
+    const fueraDelLienzo = el.seccionGrafico.offsetHeight - el.contenedorLienzo.offsetHeight;
+    const inicio = Math.min(INICIO_MAXIMO_TARJETA, el.seccionGrafico.getBoundingClientRect().top + window.scrollY);
+    const ventana = window.innerHeight - inicio - fueraDelLienzo - MARGEN_INFERIOR;
+    return Math.round(Math.max(sugerida, Math.min(ALTURA_MAXIMA, ventana)));
   }
 
   function celdaNumero(texto) {
@@ -299,23 +331,28 @@
   }
 
   function actualizarControles(tipo, descripcion, columna) {
+    // Dos etiquetas breves: el tipo de pregunta y su serie estadística. El detalle va en el título.
     const descripcionTipo = {
-      [TIPOS.CATEGORICA]: "opción única",
-      [TIPOS.MULTIRESPUESTA]: "selección múltiple: cada persona podía marcar varias opciones",
-      [TIPOS.ESCALA]: "escala: las categorías siguen el orden de sus niveles",
-      [TIPOS.NUMERICA]: "numérica: se agrupa en clases (distribución de frecuencias)",
-      [TIPOS.CRONOLOGICA]: "fecha de respuesta: se cuentan las respuestas por día",
+      [TIPOS.CATEGORICA]: ["Opción única", "Cada persona eligió una opción."],
+      [TIPOS.MULTIRESPUESTA]: ["Selección múltiple", "Cada persona podía marcar varias opciones."],
+      [TIPOS.ESCALA]: ["Escala", "Las categorías siguen el orden de sus niveles."],
+      [TIPOS.NUMERICA]: ["Numérica", "Se agrupa en clases (distribución de frecuencias)."],
+      [TIPOS.CRONOLOGICA]: ["Fecha de respuesta", "Se cuentan las respuestas por día."],
     };
+    const [nombreTipo, detalleTipo] = descripcionTipo[tipo] ?? [tipo, ""];
+    const etiquetaTipo = crear("span", nombreTipo, "etiqueta");
+    etiquetaTipo.title = detalleTipo;
     el.tipoPregunta.replaceChildren(
-      `Tipo de pregunta: ${descripcionTipo[tipo] ?? tipo}. `,
-      crear("span", serieEstadistica(tipo, descripcion, columna), "etiqueta-serie"),
+      crear("span", "Tipo de pregunta: ", "oculto-visual"),
+      etiquetaTipo,
+      crear("span", serieEstadistica(tipo, descripcion, columna), "etiqueta etiqueta--serie"),
     );
 
     const puedeComparar = estado.grupos.length >= 2 && estado.pregunta !== estado.columnaGrupo;
     if (!puedeComparar) estado.comparar = false;
     el.comparar.checked = estado.comparar;
     el.comparar.disabled = !puedeComparar;
-    el.ayudaComparar.textContent = puedeComparar
+    el.campoComparar.title = puedeComparar
       ? "Muestra los recintos lado a lado, en porcentaje dentro de cada uno."
       : "No disponible para la pregunta del recinto.";
     el.recinto.disabled = estado.comparar;
@@ -327,18 +364,21 @@
 
   /**
    * Llena el selector de tipo de gráfico: «Automático» con la sugerencia, los tipos
-   * no disponibles deshabilitados y, debajo, el motivo de cada restricción.
+   * no disponibles deshabilitados con su motivo al pasar el puntero.
    */
   function actualizarSelectorGrafico(evaluacion, sugerido, mostrado) {
     const { NOMBRES_GRAFICO } = G.grafico;
     const automatico = crear("option", `Automático (${NOMBRES_GRAFICO[sugerido].toLowerCase()})`);
     automatico.value = "";
-    el.tipoGrafico.replaceChildren(
+    ponerOpciones(
+      el.tipoGrafico,
       automatico,
-      ...evaluacion.map(({ tipoGrafico, nombre, disponible }) => {
+      ...evaluacion.map(({ tipoGrafico, nombre, disponible, razon }) => {
         const opcion = crear("option", disponible ? nombre : `${nombre} (no disponible)`);
         opcion.value = tipoGrafico;
         opcion.disabled = !disponible;
+        // El motivo aparece al pasar el puntero sobre la opción deshabilitada.
+        if (!disponible) opcion.title = razon;
         return opcion;
       }),
     );
@@ -354,21 +394,6 @@
           `«${elegido.nombre}» no está disponible para esta pregunta: ${elegido.razon} Se muestra: ${NOMBRES_GRAFICO[mostrado].toLowerCase()}.`,
         ),
       );
-    }
-    const noDisponibles = evaluacion.filter((e) => !e.disponible);
-    if (noDisponibles.length) {
-      // Desplegable breve: los tipos que comparten motivo se agrupan en una sola línea.
-      const detalle = crear("details", undefined, "ayuda-detalle");
-      detalle.open = Boolean(el.ayudaGrafico.querySelector("details")?.open);
-      detalle.append(
-        crear("summary", `${noDisponibles.length} ${noDisponibles.length === 1 ? "tipo no disponible" : "tipos no disponibles"} para esta pregunta`),
-      );
-      const porMotivo = new Map();
-      for (const { nombre, razon } of noDisponibles) porMotivo.set(razon, [...(porMotivo.get(razon) ?? []), nombre]);
-      const lista = crear("ul");
-      for (const [razon, nombres] of porMotivo) lista.append(crear("li", `${nombres.join(", ")}: ${razon}`));
-      detalle.append(lista);
-      contenido.push(detalle);
     }
     el.ayudaGrafico.replaceChildren(...contenido);
   }
@@ -453,7 +478,8 @@
   }
 
   function tarjetaMedida(titulo, valor, detalle) {
-    const contenedor = crear("div", undefined, "medida");
+    // La moda se destaca en naranja, igual que la barra más frecuente.
+    const contenedor = crear("div", undefined, titulo.startsWith("Moda") ? "medida medida--moda" : "medida");
     const dato = crear("dd", valor);
     if (detalle) dato.append(crear("span", detalle, "medida__detalle"));
     contenedor.append(crear("dt", titulo), dato);
@@ -505,7 +531,7 @@
   }
 
   /** Dibuja en pantalla: con Chart.js o, para el pictograma, con su propia función. */
-  function dibujarEnPantalla(contexto, altura) {
+  function dibujarEnPantalla(contexto, altura, escala) {
     el.contenedorLienzo.style.height = `${altura}px`;
     if (grafico) grafico.destroy();
     grafico = null;
@@ -517,7 +543,15 @@
       const configuracion = estado.comparar
         ? G.grafico.configurarComparacion(contexto)
         : G.grafico.configurarGrafico(contexto);
-      grafico = new Chart(el.lienzo, configuracion);
+      // En pantalla no va el subtítulo («n = … respuestas válidas…»): ese dato ya está en la tarjeta
+      // «Respuestas válidas». El PNG descargado sí lo lleva, como pide el informe.
+      const { plugins } = configuracion.options;
+      if (plugins?.subtitle) {
+        plugins.subtitle = { ...plugins.subtitle, display: false };
+        // El título toma el espacio que dejaba el subtítulo antes del gráfico.
+        if (plugins.title) plugins.title.padding = { ...plugins.title.padding, bottom: 14 };
+      }
+      grafico = new Chart(el.lienzo, G.grafico.escalarParaPantalla(configuracion, escala));
     }
   }
 
@@ -529,7 +563,16 @@
     actualizarControles(tipo, descripcion, columna);
 
     const anchoDisponible = el.contenedorLienzo.clientWidth || window.innerWidth;
-    const base = { pregunta: columna, tipo, modo: estado.modo, grupo: estado.grupo || null, anchoDisponible };
+    const escala = escalaTexto(anchoDisponible);
+    // Con el texto agrandado, el gráfico se arma como si el lienzo fuera más angosto,
+    // para que los títulos se partan en líneas que sigan cabiendo.
+    const base = {
+      pregunta: columna,
+      tipo,
+      modo: estado.modo,
+      grupo: estado.grupo || null,
+      anchoDisponible: Math.round(anchoDisponible / escala),
+    };
     let contexto;
     let frases;
     let tabla;
@@ -572,8 +615,13 @@
       mostrarMedidas(resumen, tipo);
     }
 
-    dibujarEnPantalla(contexto, altura);
-    estado.ultimo = { contexto, comparar: estado.comparar };
+    // El pie de figura («Fuente» y «Nota») no se muestra en pantalla: va solo en el PNG descargado.
+    const pie = {
+      fuente: estado.fuente,
+      nota: `Nota: ${G.grafico.notaDelGrafico(tipoGrafico, { tipo, comparar: estado.comparar })}`,
+    };
+    dibujarEnPantalla(contexto, alturaEnPantalla(altura), escala);
+    estado.ultimo = { contexto, comparar: estado.comparar, pie };
     el.resumenTabla.textContent =
       tipo === TIPOS.NUMERICA && !estado.comparar ? "Ver distribución de frecuencias por clases" : "Ver tabla de frecuencias";
     const nombreGrafico = G.grafico.NOMBRES_GRAFICO[tipoGrafico];
@@ -581,8 +629,6 @@
       "aria-label",
       `Gráfico (${nombreGrafico.toLowerCase()}): ${columna}. ${frases[0]} La tabla de frecuencias está debajo.`,
     );
-    el.pieFuente.textContent = estado.fuente;
-    el.pieNota.textContent = `Nota: ${G.grafico.notaDelGrafico(tipoGrafico, { tipo, comparar: estado.comparar })}`;
     el.lectura.replaceChildren(...frases.map((frase) => crear("li", frase)));
     el.tabla.replaceChildren(tabla);
   }
@@ -593,7 +639,7 @@
    */
   async function descargar() {
     if (!estado.ultimo) return;
-    const { contexto, comparar } = estado.ultimo;
+    const { contexto, comparar, pie } = estado.ultimo;
     const claro = { ...contexto, tema: G.tema.TEMAS.claro, anchoDisponible: ANCHO_EXPORTACION };
     const categorias = comparar ? contexto.comparacion.categorias.length : contexto.resumen.frecuencias.length;
     const grupos = comparar ? contexto.comparacion.grupos.length : 1;
@@ -617,10 +663,8 @@
         temporal = new Chart(lienzo, configuracion);
       }
       const nombre = G.descarga.nombreArchivo(estado.pregunta, { grupo: estado.grupo || null, comparar });
-      await G.descarga.descargarLienzo(lienzo, nombre, {
-        fuente: el.pieFuente.textContent,
-        nota: el.pieNota.textContent,
-      });
+      await G.descarga.descargarLienzo(lienzo, nombre, pie);
+      confirmarDescarga();
     } catch (error) {
       mostrarAvisos([error.message], true);
     } finally {
@@ -628,6 +672,31 @@
       lienzo.remove();
     }
   }
+
+  // El botón muestra una palomita un momento para confirmar que la imagen se descargó.
+  let esperaDescarga;
+  function confirmarDescarga() {
+    clearTimeout(esperaDescarga);
+    el.descargar.classList.remove("boton--hecho");
+    void el.descargar.offsetWidth; // reinicia la animación si se descarga dos veces seguidas
+    el.descargar.classList.add("boton--hecho");
+    esperaDescarga = setTimeout(() => el.descargar.classList.remove("boton--hecho"), 1800);
+  }
+
+  // Onda que sale del punto donde se pulsa un botón (no se crea si se pide reducir el movimiento).
+  const movimientoReducido = window.matchMedia("(prefers-reduced-motion: reduce)");
+  document.addEventListener("pointerdown", (e) => {
+    const boton = e.target.closest(".boton, .carga__estudio, .carga__elegir");
+    if (!boton || boton.disabled || movimientoReducido.matches) return;
+    const caja = boton.getBoundingClientRect();
+    const onda = crear("span", undefined, "boton__onda");
+    onda.setAttribute("aria-hidden", "true");
+    onda.style.left = `${e.clientX - caja.left}px`;
+    onda.style.top = `${e.clientY - caja.top}px`;
+    boton.append(onda);
+    // Se quita con un temporizador: si la pestaña está en segundo plano, animationend puede no llegar.
+    setTimeout(() => onda.remove(), 700);
+  });
 
   // Eventos
 
@@ -676,13 +745,18 @@
   window.addEventListener("dragover", (e) => e.preventDefault());
   window.addEventListener("drop", (e) => e.preventDefault());
 
-  // La orientación de las barras depende del ancho, así que se redibuja al cambiarlo.
+  // La orientación de las barras depende del ancho y, en computadora, el alto del gráfico
+  // depende de la ventana: se redibuja al cambiar cualquiera de los dos. En teléfono el alto
+  // cambia al ocultarse la barra del navegador, así que ahí solo cuenta el ancho.
   let espera;
   window.addEventListener("resize", () => {
     clearTimeout(espera);
     espera = setTimeout(() => {
-      if (window.innerWidth !== anchoAnterior) {
+      const cambioAncho = window.innerWidth !== anchoAnterior;
+      const cambioAlto = window.innerWidth >= ANCHO_COMPUTADORA && window.innerHeight !== altoAnterior;
+      if (cambioAncho || cambioAlto) {
         anchoAnterior = window.innerWidth;
+        altoAnterior = window.innerHeight;
         render();
       }
     }, 200);
