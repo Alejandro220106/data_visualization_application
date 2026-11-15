@@ -206,3 +206,28 @@ test("explica cómo leer cada tipo de gráfico", () => {
   assert.match(comoLeerGrafico(TIPOS_GRAFICO.BARRAS_HORIZONTALES, { tipo: TIPOS.MULTIRESPUESTA }), /^La longitud/);
   assert.match(comoLeerGrafico(TIPOS_GRAFICO.BARRAS_VERTICALES, { tipo: TIPOS.CATEGORICA, comparar: true }), /cada color es un recinto/);
 });
+
+test("en pantallas anchas agranda letras y barras sin tocar el resto de la configuración", () => {
+  const { escalarParaPantalla } = G.grafico;
+  const config = configurar(["Sí", "No", "Sí"]);
+  const datos = [...config.data.datasets[0].data];
+  escalarParaPantalla(config, 1.25);
+  assert.equal(config.options.plugins.title.font.size, 20);
+  assert.equal(config.options.plugins.title.font.weight, "700");
+  assert.equal(config.options.plugins.subtitle.font.size, 16);
+  assert.equal(config.options.scales.x.ticks.font.size, 15);
+  assert.equal(config.options.scales.y.ticks.font.size, 15);
+  assert.equal(config.options.plugins.etiquetasValor.escala, 1.25);
+  assert.ok(config.data.datasets[0].maxBarThickness > 64);
+  assert.deepEqual(config.data.datasets[0].data, datos);
+});
+
+test("con factor 1 (teléfono, tableta y PNG) la configuración queda igual", () => {
+  const { escalarParaPantalla } = G.grafico;
+  const config = configurar(["Sí", "No", "Sí"]);
+  const antes = JSON.stringify(config.options.plugins.title);
+  escalarParaPantalla(config, 1);
+  assert.equal(JSON.stringify(config.options.plugins.title), antes);
+  assert.equal(config.options.plugins.etiquetasValor.escala, undefined);
+  assert.equal(config.data.datasets[0].maxBarThickness, 64);
+});
