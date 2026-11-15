@@ -231,3 +231,11 @@ test("con factor 1 (teléfono, tableta y PNG) la configuración queda igual", ()
   assert.equal(config.options.plugins.etiquetasValor.escala, undefined);
   assert.equal(config.data.datasets[0].maxBarThickness, 64);
 });
+
+test("la barra más frecuente va en el color complementario (naranja) y las demás en azul", () => {
+  const { oscuro } = G.tema.TEMAS;
+  const config = configurar(["EcoCampus", "Lourdes", "EcoCampus", "EcoCampus"], { tipoGrafico: TIPOS_GRAFICO.BARRAS_VERTICALES });
+  assert.deepEqual(config.data.datasets[0].backgroundColor, [oscuro.destacado, oscuro.principal]);
+  const empate = configurar(["EcoCampus", "Lourdes"], { tipoGrafico: TIPOS_GRAFICO.BARRAS_VERTICALES });
+  assert.deepEqual(empate.data.datasets[0].backgroundColor, [oscuro.principal, oscuro.principal]);
+});

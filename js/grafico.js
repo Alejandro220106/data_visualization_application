@@ -390,6 +390,16 @@
 
   // Barras verticales y horizontales
 
+  /**
+   * Azul para todas las barras y el complementario (naranja) para la más frecuente, que es la moda.
+   * Si todas empatan, ninguna se destaca.
+   */
+  function coloresBarras(frecuencias, tema) {
+    const maximo = Math.max(...frecuencias.map((f) => f.cantidad));
+    const empate = frecuencias.every((f) => f.cantidad === maximo);
+    return frecuencias.map((f) => (!empate && maximo > 0 && f.cantidad === maximo ? tema.destacado : tema.principal));
+  }
+
   function configurarBarras(c, horizontal) {
     const categorias = c.resumen.frecuencias.map((f) => f.categoria);
     return {
@@ -400,7 +410,7 @@
           {
             label: tituloEjeValor(c.modo),
             data: c.resumen.frecuencias.map((f) => valorSegunModo(f, c.modo)),
-            backgroundColor: c.tema.principal,
+            backgroundColor: coloresBarras(c.resumen.frecuencias, c.tema),
             borderRadius: 4,
             maxBarThickness: 64,
             etiquetas: c.resumen.frecuencias.map((f) => etiquetaSegunModo(f, c.modo)),
@@ -461,9 +471,10 @@
 
   function comoLeerBarras(medida, { tipo, comparar }) {
     if (comparar) return `En cada categoría, cada color es un recinto y ${medida} de la barra es el porcentaje de ese recinto.`;
-    if (tipo === TIPOS.MULTIRESPUESTA) return `${medida[0].toUpperCase()}${medida.slice(1)} de cada barra indica cuántas personas eligieron esa opción.`;
-    if (tipo === TIPOS.CRONOLOGICA) return `${medida[0].toUpperCase()}${medida.slice(1)} de cada barra indica cuántas respuestas llegaron ese día.`;
-    return "Cada barra indica la cantidad de personas y el porcentaje que representa dentro de las respuestas válidas.";
+    const naranja = " La barra naranja es la más frecuente (la moda).";
+    if (tipo === TIPOS.MULTIRESPUESTA) return `${medida[0].toUpperCase()}${medida.slice(1)} de cada barra indica cuántas personas eligieron esa opción.${naranja}`;
+    if (tipo === TIPOS.CRONOLOGICA) return `${medida[0].toUpperCase()}${medida.slice(1)} de cada barra indica cuántas respuestas llegaron ese día.${naranja}`;
+    return `Cada barra indica la cantidad de personas y el porcentaje que representa dentro de las respuestas válidas.${naranja}`;
   }
 
   registrarGrafico({
